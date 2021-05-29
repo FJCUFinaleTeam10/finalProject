@@ -12,7 +12,7 @@ from remove import Remove
 # Orders
 
 
-class D:
+class Ds:
     def __init__(self, label, t, R, V, L):
         self.label = label
         self.t = t
@@ -64,8 +64,7 @@ for _ in range(Vehicle_num):
 
 
 for _ in range(Order_num):
-    D_0.append(D(_, random.randint(0, T+1),
-                 random.randint(0, Resturant_num), 0, 0))
+    D_0.append(Ds(_, random.randint(0, T+1),random.randint(0, Resturant_num), 0, 0))
 
 
 # print(R)
@@ -80,12 +79,12 @@ while sequence:
     nextPermutation(D_0)
     D_hat = D_0
     Theta_hat = Theta           # Candidate route plan
-    P_hat = 0                   # Set of postponements
+    P_hat = set()                   # Set of postponements
     for D in D_hat:
         V = FindVehicle(Theta_hat, D, b)
         Theta_hat = AssignOrder(Theta_hat, D, V)
         if Postponement(P_hat, Theta_hat, D, p_max, t_Pmax):
-            P_hat = P_hat  # Union D
+            P_hat = P_hat.union(D)  # Union D
         x_hat = (Theta_hat, P_hat)
     if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
         x = x_hat
