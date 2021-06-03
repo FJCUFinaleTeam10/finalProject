@@ -1,1 +1,3 @@
-# finalProject
+-	Vehicle starting location
+-	List of restaurants
+-	Distance measure: https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula/27943
