@@ -80,7 +80,7 @@ while sequence:
         V = FindVehicle(Theta_hat, D, b,V,R)
         Theta_hat = AssignOrder(Theta_hat, D, V)
 
-        if Postponement(P_hat, Theta_hat, D, p_max, t_Pmax):
+        if Postponement(P_hat, D, p_max, t_Pmax):
             P_hat = P_hat.union(D)  # Union D
         x_hat = (Theta_hat, P_hat)
     if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
