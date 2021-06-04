@@ -35,6 +35,8 @@ x_V = []  # vehicle x position
 y_V = []  # vehicle y position
 V = []  # vehicle
 Theta = []  # related plan
+D_x: list = []
+D_y: list = []
 
 # not understand parameters
 b = 1  # time buffer
@@ -57,12 +59,14 @@ V, x_V, y_V = generateTestData.importVehicleValue()
 
 # importOrderValue()
 Restaurant_num = len(R)  # will be 110, is the same with the paper
-for _ in range(Order_num):
-    D_0.append(order.Ds(_, random.randint(0, T + 1), random.randint(0, Restaurant_num), 0, 0))
+D_0,D_x,D_y = generateTestData.importOrderValue()
+# for _ in range(Order_num):
+#     D_0.append(order.Ds(_, random.randint(0, T + 1), random.randint(0, Restaurant_num), 0, 0))
 
 # print(R)
 plt.scatter(x_R, y_R, c='red', s=25)
 plt.scatter(x_V, y_V, c='green', s=25)
+# plt.scatter(D_x, D_y, c='blue', s=25)
 plt.show()
 
 # main function
@@ -73,8 +77,9 @@ while sequence:
     Theta_hat = Theta  # Candidate route plan
     P_hat = set()  # Set of postponements
     for D in D_hat:
-        V = FindVehicle(Theta_hat, D, b)
+        V = FindVehicle(Theta_hat, D, b,V,R)
         Theta_hat = AssignOrder(Theta_hat, D, V)
+
         if Postponement(P_hat, Theta_hat, D, p_max, t_Pmax):
             P_hat = P_hat.union(D)  # Union D
         x_hat = (Theta_hat, P_hat)

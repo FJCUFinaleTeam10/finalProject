@@ -19,8 +19,8 @@ def importRestaurantValue():
             value = line.split('\t')
             restaurantInfo = restaurant.restaurant(int(value[0]), float(value[1]), float(value[2]))
             R.append(restaurantInfo)
-            x_R.append(restaurantInfo.x)
-            y_R.append(restaurantInfo.y)
+            x_R.append(restaurantInfo.xPosition)
+            y_R.append(restaurantInfo.yPosition)
     return R, x_R, y_R
     # for _ in range(Restaurant_num):
     #     R.append([random.randint(0, (horizon+1)), random.randint(0, (vertical+1))])
@@ -50,36 +50,40 @@ def importVehicleValue():
 
 
 def importOrderValue():
-    value1: int = -1
-    value2: int = -1
-    value3: int = -1
-    value4: float = -1
-    value5: float = -1
-    value6: int = -1
-    value7: int = -1
+    # value1: int = -1
+    # value2: int = -1
+    # value3: int = -1
+    # value4: float = -1
+    # value5: float = -1
+    # value6: int = -1
+    # value7: int = -1
 
-    # D_0: list = []
+    D_0: list = []
+    D_x: list = []
+    D_y: list = []
     with open(setting.order_dir) as openFileObject:
         for line in openFileObject:
             if line.__contains__("\n"):
                 line = line.replace('\n', '')
             value = line.split('_')
 
-            value1 = max(value1, int(value[0]))
-            value2 = max(value2, int(value[1]))
-            value3 = max(value3, int(value[2]))
-            value4 = max(value4, float(value[3]))
-            value5 = max(value5, float(value[4]))
-            value6 = max(value6, int(value[5]))
-            value7 = max(value7, int(value[6]))
+            # value1 = max(value1, int(value[0]))
+            # value2 = max(value2, int(value[1]))
+            # value3 = max(value3, int(value[2]))
+            # value4 = max(value4, float(value[3]))
+            # value5 = max(value5, float(value[4]))
+            # value6 = max(value6, int(value[5]))
+            # value7 = max(value7, int(value[6]))
 
+            orderInfo = order.Ds(int(value[0]), int(value[1]), int(value[5]), 0, 0,
+                                 float(value[3]), float(value[4]),
+                                 int(value[6]))
+            D_0.append(orderInfo)
+            D_x.append(orderInfo.x)
+            D_y.append(orderInfo.y)
 
-            # orderInfo = order.Ds(int(value[0]), int(value[1]), int(value[2]),
-            #                      float(value[3]), float(value[4]),
-            #                      int(value[5]), int(value[6]))
-            # D_0.append(orderInfo)
-    print(value1, " ", value2, " ", value3, " ", value4, " ", value5, " ", value6, " ", value7)
-    # return D_0
+    # print(value1, " ", value2, " ", value3, " ", value4, " ", value5, " ", value6, " ", value7)
+    return D_0, D_x, D_y
 
 
 # for _ in range(Order_num):
