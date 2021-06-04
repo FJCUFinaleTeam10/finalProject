@@ -15,7 +15,7 @@ def FindVehicle(Theta_hat, Order, buffer, driverList,restaurantList):
     OrderRestaurant = restaurantList[Order.R + 1]
     minTimeDriver = driverList[0]
 
-    for driver in driverList:
-        if tripTime(driver, OrderRestaurant, Order) < tripTime(minTimeDriver, OrderRestaurant, Order):
+    for currentDriver in driverList:
+        if tripTime(currentDriver, OrderRestaurant, Order) < tripTime(minTimeDriver, OrderRestaurant, Order):
             minTimeDriver = driver
     return minTimeDriver
