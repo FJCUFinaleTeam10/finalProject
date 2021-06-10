@@ -61,7 +61,7 @@ plt.show()
 # main function
 
 
-def RMDP(T):
+def RMDP(T, Theta):
     Order_num = 2
     for i in range(T, T+2):
         D_0.append(Ds_0[i])
@@ -86,3 +86,4 @@ def RMDP(T):
         sequence -= 1
     Theta_x = Theta_hat
     Theta_x = Remove(Theta_x, P_x)
+    return Theta_x
