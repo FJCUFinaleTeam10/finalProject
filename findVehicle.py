@@ -16,7 +16,6 @@ def tripTime(driv: driver, res: restaurant, order: Ds):
         print("Oops!  That was no valid number.  Try again...")
 
 
-
 def FindVehicle(Theta_hat, Order, buffer, driverList, restaurantList):
     OrderRestaurant = restaurantList[Order.R + 1]
     minTimeDriver = driverList[0]
