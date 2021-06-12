@@ -68,7 +68,6 @@ plt.scatter(x_R, y_R, c='red', s=25)
 plt.scatter(x_V, y_V, c='green', s=25)
 # plt.scatter(D_x, D_y, c='blue', s=25)
 plt.show()
-
 # main function
 sequence = factorial(Order_num)  # counter for n! type sequences
 while sequence:
@@ -81,8 +80,8 @@ while sequence:
         Theta_hat = AssignOrder(Theta_hat, D, pairedVehicle, R)
 
         if Postponement(P_hat, D, p_max, t_Pmax):
-            P_hat = P_hat.union(D)  # Union D
-        x_hat = (Theta_hat, P_hat)
+            P_hat = P_hat.add(D)  # Union D
+        x_hat = [Theta_hat, P_hat]
     if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
         x = x_hat
         delay = Delta_S
@@ -90,3 +89,5 @@ while sequence:
     sequence -= 1
 
 Theta_x = Remove(Theta_x, P_x)
+
+

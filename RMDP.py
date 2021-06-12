@@ -45,7 +45,6 @@ P_x = 0
 
 R, x_R, y_R = generateTestData.importRestaurantValue()
 
-
 V, x_V, y_V = generateTestData.importVehicleValue()
 
 # importOrderValue()
@@ -58,12 +57,13 @@ plt.scatter(x_V, y_V, c='green', s=25)
 # plt.scatter(D_x, D_y, c='blue', s=25)
 plt.show()
 
+
 # main function
 
 
 def RMDP(T, Theta):
     Order_num = 2
-    for i in range(T, T+2):
+    for i in range(T, T + 2):
         D_0.append(Ds_0[i])
     sequence = factorial(Order_num)  # counter for n! type sequences
     while sequence:
@@ -78,7 +78,7 @@ def RMDP(T, Theta):
             if Postponement(P_hat, D, p_max, t_Pmax):
                 if D not in P_hat:
                     P_hat.append(D)
-            x_hat = (Theta_hat, P_hat)
+            x_hat = [Theta_hat, P_hat]
         if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
             x = x_hat
             delay = Delta_S
@@ -86,4 +86,4 @@ def RMDP(T, Theta):
         sequence -= 1
     Theta_x = Theta_hat
     Theta_x = Remove(Theta_x, P_x)
-    return Theta_x
+    return Theta_x, P_x
