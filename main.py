@@ -74,13 +74,13 @@ while sequence:
     nextPermutation(D_0)
     D_hat = D_0
     Theta_hat = Theta  # Candidate route plan
-    P_hat = set()  # Set of postponements
+    P_hat = []  # Set of postponements
     for D in D_hat:
         pairedVehicle = FindVehicle(Theta_hat, D, b, V, R)
         Theta_hat = AssignOrder(Theta_hat, D, pairedVehicle, R)
 
         if Postponement(P_hat, D, p_max, t_Pmax):
-            P_hat = P_hat.add(D)  # Union D
+            P_hat = [*P_hat,D]  # Union D
         x_hat = [Theta_hat, P_hat]
     if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
         x = x_hat

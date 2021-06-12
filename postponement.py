@@ -1,4 +1,4 @@
-def Postponement(P_hat, D, p_max, t_Pmax):
+def Postponement(P_hat:set, D, p_max, t_Pmax):
     # P_hat,D, p_max, t_Pmax have the description
     print("Postponement")
     # if Theta_hat != D:  # I don't know how to get current route plan
