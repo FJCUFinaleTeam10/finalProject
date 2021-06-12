@@ -61,7 +61,7 @@ plt.show()
 # main function
 
 
-def RMDP(T, Theta):
+def RMDP(T, Theta, P_x):
     Order_num = 2
     for i in range(T, T + 2):
         D_0.append(Ds_0[i])
