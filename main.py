@@ -78,7 +78,6 @@ while sequence:
     for D in D_hat:
         pairedVehicle = FindVehicle(Theta_hat, D, b, V, R)
         Theta_hat = AssignOrder(Theta_hat, D, pairedVehicle, R)
-
         if Postponement(P_hat, D, p_max, t_Pmax):
             P_hat = [*P_hat,D]  # Union D
         x_hat = [Theta_hat, P_hat]
