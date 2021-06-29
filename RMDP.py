@@ -78,7 +78,11 @@ def RMDP(T, Theta, P_x):
             if Postponement(P_hat, D, p_max, t_Pmax):
                 if D not in P_hat:
                     P_hat.append(D)
-            x_hat = [Theta_hat, P_hat]
+            else:
+                for i in range(0,len(P_hat)):
+                    x_hat = [Theta_hat, P_hat[i]]
+                P_hat.clear
+                P_hat.append(D)
         if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
             x = x_hat
             delay = Delta_S
