@@ -3,6 +3,7 @@ from math import factorial
 
 import matplotlib.pyplot as plt
 
+from Math.distance import distance
 from assignOrder import AssignOrder
 from findVehicle import FindVehicle
 from generatingData import generateTestData
@@ -12,56 +13,42 @@ from postponement import Postponement
 from remove import Remove
 from slack import Slack
 
-# Orders
-# parameters initialization
-t_ba = 40  # minutes
-p_max = 3  # number
-t_Pmax = 20  # minutes
-x = 0
-slack = 0
-delay = float('Inf')
-D_0 = []  # Order
-R = []  # restaurant
-Order_num = 2
-Vehicle_num = 10
-horizon = 1000
-vertical = 1000
 
-x_R = []  # restaurant x position
-y_R = []  # restaurant y position
-x_V = []  # vehicle x position
-y_V = []  # vehicle y position
-V = []  # vehicle
-Theta = []  # related plan
-D_x: list = []
-D_y: list = []
+def RMDP(T, Theta, delay: float, P_x):
+    # Orders
+    # parameters initialization
+    t_ba = 40  # minutes
+    p_max = 3  # number
+    t_Pmax = 20  # minutes
+    x = 0
+    slack = 0
+    print("here")
+    D_0 = []  # Order
+    R = []  # restaurant
+    Order_num = 2
+    Vehicle_num = 10
+    horizon = 1000
+    vertical = 1000
 
-# not understand parameters
-b = 1  # time buffer
-S = 0  # state(not sure)
-Delta_S = 0
-Theta_x = []
-P_x = 0
+    Theta = []  # related plan
 
-R, x_R, y_R = generateTestData.importRestaurantValue()
+    # not understand parameters
+    time_buffer = 1
+    S = 0  # state(not sure)
+    Delta_S = 0
+    Theta_x = []
+    P_x = 0
 
-V, x_V, y_V = generateTestData.importVehicleValue()
+    R, x_R, y_R = generateTestData.importRestaurantValue()
+    V, x_V, y_V = generateTestData.importVehicleValue()
+    Ds_0, D_x, D_y = generateTestData.importOrderValue()
 
-# importOrderValue()
-Restaurant_num = len(R)  # will be 110, is the same with the paper
-Ds_0, D_x, D_y = generateTestData.importOrderValue()
+    # print(R)
+    plt.scatter(x_R, y_R, c='red', s=25)
+    plt.scatter(x_V, y_V, c='green', s=25)
 
-# print(R)
-plt.scatter(x_R, y_R, c='red', s=25)
-plt.scatter(x_V, y_V, c='green', s=25)
-# plt.scatter(D_x, D_y, c='blue', s=25)
-plt.show()
+    plt.show()
 
-
-# main function
-
-
-def RMDP(T, Theta, P_x):
     Order_num = 2
     for i in range(T, T + 2):
         D_0.append(Ds_0[i])
@@ -72,21 +59,17 @@ def RMDP(T, Theta, P_x):
         Theta_hat = Theta  # Candidate route plan
         P_hat = []  # Set of postponements
         for D in D_hat:
-            V = FindVehicle(Theta_hat, D, b, V, R)
-            Theta_hat = AssignOrder(Theta_hat, D, V)
+            currentDriver = FindVehicle(Theta_hat, D, time_buffer, V, R)
+            Theta_hat = AssignOrder(Theta_hat, D, currentDriver, R)
 
             if Postponement(P_hat, D, p_max, t_Pmax):
                 if D not in P_hat:
                     P_hat.append(D)
-            else:
-                for i in range(0,len(P_hat)):
-                    x_hat = [Theta_hat, P_hat[i]]
-                P_hat.clear
-                P_hat.append(D)
-        if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
+            x_hat = [Theta_hat, P_hat]
+        if (S < delay) or ((S == delay) and (Slack(S, Theta_hat, time_buffer, t_ba) < slack)):
             x = x_hat
             delay = Delta_S
-            slack = Slack(S, Theta_hat)
+            slack = Slack(S, Theta_hat, time_buffer, t_ba)
         sequence -= 1
     Theta_x = Theta_hat
     Theta_x = Remove(Theta_x, P_x)
