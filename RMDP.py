@@ -78,14 +78,21 @@ def RMDP(T, Theta, P_x):
             if Postponement(P_hat, D, p_max, t_Pmax):
                 if D not in P_hat:
                     P_hat.append(D)
-                    if len(P_hat) == p_max:
-                        Pop_order = P_hat.pop(0)
-                        V = FindVehicle(Theta_hat, Pop_order, b, V, R)
-                        Theta_hat = AssignOrder(Theta_hat, Pop_order, V)
+            else:
+                if D not in P_hat:
+                    
                     while D.t-P_hat[0].t>=t_Pmax:
-                        Pop_order = P_hat.pop(0)
-                        V = FindVehicle(Theta_hat, Pop_order, b, V, R)
-                        Theta_hat = AssignOrder(Theta_hat, Pop_order, V)
+                        V = FindVehicle(Theta_hat, P_hat[0], b, V, R)
+                        Theta_hat = AssignOrder(Theta_hat,P_hat[0], V)
+                        P_hat.pop(0)
+                    if len(P_hat)==p_max:
+                        for i in range (0,p_max):
+                            V = FindVehicle(Theta_hat,P_hat[i], b, V, R)
+                            Theta_hat = AssignOrder(Theta_hat,P_hat[i], V)
+                    P_hat.claer
+                    P_hat.append(D)
+                
+
             x_hat = [Theta_hat, P_hat]
 
         if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
