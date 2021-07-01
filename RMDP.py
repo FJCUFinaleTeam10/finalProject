@@ -14,7 +14,7 @@ from remove import Remove
 from slack import Slack
 
 
-def RMDP(T, Theta, delay: float, P_x):
+def RMDP(T, Theta,P_hat, delay: float, ):
     # Orders
     # parameters initialization
     t_ba = 40  # minutes
@@ -22,7 +22,6 @@ def RMDP(T, Theta, delay: float, P_x):
     t_Pmax = 20  # minutes
     x = 0
     slack = 0
-    print("here")
     D_0 = []  # Order
     R = []  # restaurant
     Order_num = 2
