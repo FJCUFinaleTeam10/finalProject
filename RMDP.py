@@ -70,7 +70,7 @@ def RMDP(T, Theta, P_x):
         nextPermutation(D_0)
         D_hat = D_0
         Theta_hat = Theta  # Candidate route plan
-        P_hat = []  # Set of postponements
+        P_hat = P_x  # Set of postponements
         for D in D_hat:
             V = FindVehicle(Theta_hat, D, b, V, R)
             Theta_hat = AssignOrder(Theta_hat, D, V)
@@ -79,15 +79,28 @@ def RMDP(T, Theta, P_x):
                 if D not in P_hat:
                     P_hat.append(D)
             else:
-                for i in range(0,len(P_hat)):
-                    x_hat = [Theta_hat, P_hat[i]]
-                P_hat.clear
-                P_hat.append(D)
+                if D not in P_hat:
+                    
+                    while D.t-P_hat[0].t>=t_Pmax:
+                        V = FindVehicle(Theta_hat, P_hat[0], b, V, R)
+                        Theta_hat = AssignOrder(Theta_hat,P_hat[0], V)
+                        P_hat.pop(0)
+                    if len(P_hat)==p_max:
+                        for i in range (0,p_max):
+                            V = FindVehicle(Theta_hat,P_hat[i], b, V, R)
+                            Theta_hat = AssignOrder(Theta_hat,P_hat[i], V)
+                    P_hat.claer
+                    P_hat.append(D)
+                
+
+            x_hat = [Theta_hat, P_hat]
+
         if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
             x = x_hat
             delay = Delta_S
             slack = Slack(S, Theta_hat)
         sequence -= 1
     Theta_x = Theta_hat
+    P_x = P_hat
     Theta_x = Remove(Theta_x, P_x)
     return Theta_x, P_x
