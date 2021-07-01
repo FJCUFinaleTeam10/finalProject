@@ -17,7 +17,7 @@ from slack import Slack
 t_ba = 40  # minutes
 p_max = 3  # number
 t_Pmax = 20  # minutes
-x = []
+x = 0
 slack = 0
 delay = float('Inf')
 D_0 = []  # Order
@@ -70,7 +70,7 @@ def RMDP(T, Theta, P_x):
         nextPermutation(D_0)
         D_hat = D_0
         Theta_hat = Theta  # Candidate route plan
-        P_hat = []  # Set of postponements
+        P_hat = P_x  # Set of postponements
         for D in D_hat:
             V = FindVehicle(Theta_hat, D, b, V, R)
             Theta_hat = AssignOrder(Theta_hat, D, V)
@@ -94,5 +94,6 @@ def RMDP(T, Theta, P_x):
             slack = Slack(S, Theta_hat)
         sequence -= 1
     Theta_x = Theta_hat
+    P_x = P_hat
     Theta_x = Remove(Theta_x, P_x)
     return Theta_x, P_x
