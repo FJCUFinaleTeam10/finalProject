@@ -17,7 +17,7 @@ from slack import Slack
 t_ba = 40  # minutes
 p_max = 3  # number
 t_Pmax = 20  # minutes
-x = 0
+x = []
 slack = 0
 delay = float('Inf')
 D_0 = []  # Order
@@ -78,11 +78,16 @@ def RMDP(T, Theta, P_x):
             if Postponement(P_hat, D, p_max, t_Pmax):
                 if D not in P_hat:
                     P_hat.append(D)
-            else:
-                for i in range(0,len(P_hat)):
-                    x_hat = [Theta_hat, P_hat[i]]
-                P_hat.clear
-                P_hat.append(D)
+                    if len(P_hat) == p_max:
+                        Pop_order = P_hat.pop(0)
+                        V = FindVehicle(Theta_hat, Pop_order, b, V, R)
+                        Theta_hat = AssignOrder(Theta_hat, Pop_order, V)
+                    while D.t-P_hat[0].t>=t_Pmax:
+                        Pop_order = P_hat.pop(0)
+                        V = FindVehicle(Theta_hat, Pop_order, b, V, R)
+                        Theta_hat = AssignOrder(Theta_hat, Pop_order, V)
+            x_hat = [Theta_hat, P_hat]
+
         if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
             x = x_hat
             delay = Delta_S
