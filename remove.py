@@ -13,3 +13,6 @@ def Remove(Theta_x, P_x):
 
     return Theta_x
 
+# This function removes the postponed orders
+# and the according restaurant visits from
+# the planned routes

@@ -3,6 +3,7 @@ from math import factorial
 
 import matplotlib.pyplot as plt
 
+from Math.distance import distance
 from assignOrder import AssignOrder
 from findVehicle import FindVehicle
 from generatingData import generateTestData
@@ -12,95 +13,73 @@ from postponement import Postponement
 from remove import Remove
 from slack import Slack
 
-# Orders
-# parameters initialization
-t_ba = 40  # minutes
-p_max = 3  # number
-t_Pmax = 20  # minutes
-x = 0
-slack = 0
-delay = float('Inf')
-D_0 = []  # Order
-R = []  # restaurant
-Order_num = 2
-Vehicle_num = 10
-horizon = 1000
-vertical = 1000
 
-x_R = []  # restaurant x position
-y_R = []  # restaurant y position
-x_V = []  # vehicle x position
-y_V = []  # vehicle y position
-V = []  # vehicle
-Theta = []  # related plan
-D_x: list = []
-D_y: list = []
+class RMDP:
+    def __init__(self):
+        self.t_ba = 40  # minutes
+        self.p_max = 3  # number
+        self.t_Pmax = 20  # minutes
+        self.x = 0
+        self.slack = 0
+        self.D_0 = []  # Order
+        self.R = []  # restaurant
+        self.Order_num = 2
+        self.Vehicle_num = 10
+        self.horizon = 1000
+        self.vertical = 1000
+        self.Theta = []  # related plan
+        self.time_buffer = 1
+        self.S = 0  # state(not sure)
+        self.Delta_S = 0
+        self.Theta_x = []
+        self.P_x = 0
 
-# not understand parameters
-b = 1  # time buffer
-S = 0  # state(not sure)
-Delta_S = 0
-Theta_x = []
-P_x = 0
+    def runRMDP(self, T, Theta, delay: float, ):
 
-R, x_R, y_R = generateTestData.importRestaurantValue()
+        # Orders
+        # parameters initialization
 
-V, x_V, y_V = generateTestData.importVehicleValue()
+        # print(R)
+        Order_num = 2
+        for i in range(T, T + 2):
+            self.D_0.append(self.Ds_0[i])
+        sequence = factorial(Order_num)  # counter for n! type sequences
 
-# importOrderValue()
-Restaurant_num = len(R)  # will be 110, is the same with the paper
-Ds_0, D_x, D_y = generateTestData.importOrderValue()
+        while sequence:
+            nextPermutation(self.D_0)
+            D_hat = self.D_0
+            Theta_hat = Theta  # Candidate route plan
+            P_hat = []  # Set of postponements
+            for D in D_hat:
+                currentDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
+                Theta_hat = AssignOrder(Theta_hat, D, currentDriver, self.R)
 
-# print(R)
-plt.scatter(x_R, y_R, c='red', s=25)
-plt.scatter(x_V, y_V, c='green', s=25)
-# plt.scatter(D_x, D_y, c='blue', s=25)
-plt.show()
+                if Postponement(P_hat, D, self.p_max, self.t_Pmax):
+                    if D not in P_hat:
+                        P_hat.append(D)
+                else:
+                    TMP: list = []
+                    while D.t - P_hat[0].t < self.t_Pmax:
+                        TMP.append(P_hat[0])
+                        P_hat.pop()
+                    if len(P_hat) >= self.p_max:
+                        TMP.add()
+                x_hat = [Theta_hat, P_hat]
+            if (self.S < delay) or ((self.S == delay) and (Slack(self.S, Theta_hat, self.time_buffer, self.t_ba) < slack)):
+                x = x_hat
+                delay = self.Delta_S
+                slack = Slack(self.S, Theta_hat, self.time_buffer, self.t_ba)
+            sequence -= 1
+        Theta_x = Theta_hat
+        Theta_x = Remove(Theta_x, self.P_x)
+        return Theta_x, self.P_x
 
+    def showPosition(self):
+        plt.scatter(self.x_R, self.y_R, c='red', s=25)
+        plt.scatter(self.x_V, self.y_V, c='green', s=25)
+        plt.show()
 
-# main function
-
-
-def RMDP(T, Theta, P_x):
-    Order_num = 2
-    for i in range(T, T + 2):
-        D_0.append(Ds_0[i])
-    sequence = factorial(Order_num)  # counter for n! type sequences
-    while sequence:
-        nextPermutation(D_0)
-        D_hat = D_0
-        Theta_hat = Theta  # Candidate route plan
-        P_hat = P_x  # Set of postponements
-        for D in D_hat:
-            V = FindVehicle(Theta_hat, D, b, V, R)
-            Theta_hat = AssignOrder(Theta_hat, D, V)
-
-            if Postponement(P_hat, D, p_max, t_Pmax):
-                if D not in P_hat:
-                    P_hat.append(D)
-            else:
-                if D not in P_hat:
-                    
-                    while D.t-P_hat[0].t>=t_Pmax:
-                        V = FindVehicle(Theta_hat, P_hat[0], b, V, R)
-                        Theta_hat = AssignOrder(Theta_hat,P_hat[0], V)
-                        P_hat.pop(0)
-                    if len(P_hat)==p_max:
-                        for i in range (0,p_max):
-                            V = FindVehicle(Theta_hat,P_hat[i], b, V, R)
-                            Theta_hat = AssignOrder(Theta_hat,P_hat[i], V)
-                    P_hat.claer
-                    P_hat.append(D)
-                
-
-            x_hat = [Theta_hat, P_hat]
-
-        if (S < delay) or ((S == delay) and (Slack(S, Theta_hat) < slack)):
-            x = x_hat
-            delay = Delta_S
-            slack = Slack(S, Theta_hat)
-        sequence -= 1
-    Theta_x = Theta_hat
-    P_x = P_hat
-    Theta_x = Remove(Theta_x, P_x)
-    return Theta_x, P_x
+    def generatingData(self):
+        self.R, self.x_R, self.y_R = generateTestData.importRestaurantValue()
+        self.V, self.x_V, self.y_V = generateTestData.importVehicleValue()
+        self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
