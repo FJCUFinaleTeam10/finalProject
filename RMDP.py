@@ -40,8 +40,9 @@ class RMDP:
         # parameters initialization
 
         # print(R)
-        Order_num = 2
-        for i in range(T, T + 2):
+        Order_num = 5
+        T = Order_num*T
+        for i in range(T, T + Order_num):
             self.D_0.append(self.Ds_0[i])
         sequence = factorial(Order_num)  # counter for n! type sequences
 
@@ -51,7 +52,8 @@ class RMDP:
             Theta_hat = Theta  # Candidate route plan
             P_hat = []  # Set of postponements
             for D in D_hat:
-                currentDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
+                currentDriver = FindVehicle(
+                    Theta_hat, D, self.time_buffer, self.V, self.R)
                 Theta_hat = AssignOrder(Theta_hat, D, currentDriver, self.R)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
@@ -65,13 +67,20 @@ class RMDP:
                     if len(P_hat) >= self.p_max:
                         TMP.add()
                 x_hat = [Theta_hat, P_hat]
-            if (self.S < delay) or ((self.S == delay) and (Slack(self.S, Theta_hat, self.time_buffer, self.t_ba) < slack)):
-                x = x_hat
-                delay = self.Delta_S
-                slack = Slack(self.S, Theta_hat, self.time_buffer, self.t_ba)
+            delay = Slack(self.S, Theta_hat, self.time_buffer,
+                          self.t_ba)                                      # delay with no postponement
+            # plan with postpnement
+            Theta_hat_postpone = Remove(Theta_hat, P_hat)
+            delay_postpone = Slack(
+                self.S, Theta_hat_postpone, self.time_buffer, self.t_ba)  # delay with postponement
+            if (delay_postpone < delay):
+                Theta_hat = Theta_hat_postpone
+            else:
+                P_hat = P_hat.pop()
             sequence -= 1
         Theta_x = Theta_hat
-        Theta_x = Remove(Theta_x, self.P_x)
+        self.P_x = P_hat
+        #Theta_x = Remove(Theta_x, self.P_x)
         return Theta_x, self.P_x
 
     def showPosition(self):
