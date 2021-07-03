@@ -1,8 +1,9 @@
 class restaurant:
-    def __init__(self, restaurant_id, restaurant_x, restaurant_y):
+    def __init__(self, restaurant_id, restaurant_x, restaurant_y, prepareTime: float = 0.0):
         self.id: int = restaurant_id
         self.xPosition: float = restaurant_x
         self.yPosition: float = restaurant_y
+        self.prepareTime: float = prepareTime
 
     def getLongitude(self):
         return self.xPosition
@@ -13,4 +14,5 @@ class restaurant:
     def getId(self):
         return self.id
 
-
+    def setPrepareTime(self, time):
+        self.prepareTime = time

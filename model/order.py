@@ -4,6 +4,7 @@ class Ds:
         # R is the ordered restaurant
         # V is the assigned driver
         # L is the status
+
         self.label = label
         self.t = timeRequest
         self.V = vehicle
@@ -41,3 +42,6 @@ class Ds:
 
     def getArriveTime(self):
         return self.arriveTime
+
+    def setDeadline(self, time: int):
+        self.time = time
