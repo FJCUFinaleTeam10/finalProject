@@ -8,7 +8,7 @@ from model.order import Ds
 def AssignOrder(Theta_hat, D: Ds, V: driver, RestaurantList: restaurant):
     currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
     if currentRoute is None:
-        sub_rout = [RestaurantList[D.getRestaurant()], D]
+        sub_rout: list = [RestaurantList[D.getRestaurant()], D]
         Theta_hat.append({"driverId": V.get_id(), "route": sub_rout})
     else:
         currentRoute["route"].append(RestaurantList[D.getRestaurant()])

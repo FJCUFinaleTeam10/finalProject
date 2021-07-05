@@ -17,8 +17,6 @@ from slack import Slack
 
 class RMDP:
     def __init__(self):
-        self.t_ba = 40  # minutes
-        self.p_max = 3  # number
         self.x = 0
         self.slack = 0
         self.D_0 = []  # Order
@@ -31,14 +29,16 @@ class RMDP:
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0
+        self.time_buffer=0
+        self.p_max=3
+        self.t_Pmax=40
 
-
-
-    def runRMDP(self, T, Theta, delay: float, ):
+    def runRMDP(self, T, Theta, delay: float):
 
         # Orders
         # parameters initialization
         # print(R)
+
         Order_num = 5
         T = Order_num * T
         for i in range(T, T + Order_num):
@@ -48,11 +48,10 @@ class RMDP:
         while sequence:
             nextPermutation(self.D_0)
             D_hat = self.D_0
-            Theta_hat = Theta  # Candidate route plan
+            Theta_hat = self.Theta  # Candidate route plan
             P_hat = []  # Set of postponements
             for D in D_hat:
-                currentDriver = FindVehicle(
-                    Theta_hat, D, self.time_buffer, self.V, self.R)
+                currentDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
                 Theta_hat = AssignOrder(Theta_hat, D, currentDriver, self.R)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
@@ -92,11 +91,14 @@ class RMDP:
         self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
 
         for vehicle in self.V:
-            vehicle.setVelocity()
+            vehicle.setVelocity(10)
+
+        for restaurant in self.R:
+            restaurant.setPrepareTime(10 * 60)
 
     def updateDriverLocation(self, time):
         for route in self.Theta:
-            currentDriver: vehicle = self.D[route.get("driverid")]
+            currentDriver = self.D[route.get("driverid")]
             targetDestination = currentDriver.route[0]
             travledDistance = currentDriver.getVelocity * time
             updatedLocation = interSectionCircleAndLine(currentDriver.getLongitude,
@@ -104,7 +106,7 @@ class RMDP:
                                                         travledDistance, currentDriver.getLongitude,
                                                         currentDriver.getLatitude, targetDestination.getLongitude,
                                                         targetDestination.getLatitude)
-            if():
+            if distance(updatedLocation.y, updatedLocation.x, targetDestination.y, targetDestination.x):
                 currentDriver.route.pop(0)
             currentDriver.setLongitude(updatedLocation.x)
             currentDriver.setLatitude(updatedLocation.y)
