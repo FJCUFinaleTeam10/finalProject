@@ -12,7 +12,6 @@ from model import order
 from nextPermutation import nextPermutation
 from postponement import Postponement
 from remove import Remove
-from slack import Slack
 
 
 class RMDP:
@@ -29,9 +28,11 @@ class RMDP:
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0
-        self.time_buffer=0
-        self.p_max=3
-        self.t_Pmax=40
+        self.time_buffer = 0
+        self.p_max = 3
+        self.t_Pmax = 40
+        self.distanceEpsilon = 10
+        self.t_ba = 10
 
     def runRMDP(self, T, Theta, delay: float):
 
@@ -51,34 +52,49 @@ class RMDP:
             Theta_hat = self.Theta  # Candidate route plan
             P_hat = []  # Set of postponements
             for D in D_hat:
-                currentDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
-                Theta_hat = AssignOrder(Theta_hat, D, currentDriver, self.R)
+                currentPairdDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
+                Theta_hat = AssignOrder(Theta_hat, D, currentPairdDriver, self.R)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
-                    TMP: list = []
-                    while D.t - P_hat[0].t < self.t_Pmax:
-                        TMP.append(P_hat[0])
-                        P_hat.pop()
+                    while D.t - P_hat[0].t > self.t_Pmax:
+                        pairedDriver = FindVehicle(Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
+                        Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.R)
+                        P_hat.pop(0)
                     if len(P_hat) >= self.p_max:
-                        TMP.add()
+                        for i in range(0, len(P_hat)):
+                            pairedDriver = FindVehicle(Theta_hat, P_hat[i], self.time_buffer, self.V, self.R)
+                            Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.R)
+                        P_hat.clear
+                    P_hat.append(D)
                 x_hat = [Theta_hat, P_hat]
-            delay = Slack(self.S, Theta_hat, self.time_buffer,
-                          self.t_ba)  # delay with no postponement
+            delay = self.Slack(self.S, Theta_hat)  # delay with no postponement
             # plan with postpnement
             Theta_hat_postpone = Remove(Theta_hat, P_hat)
-            delay_postpone = Slack(self.S, Theta_hat_postpone, self.time_buffer, self.t_ba)  # delay with postponement
+            delay_postpone = self.Slack(self.S, Theta_hat_postpone, self.time_buffer, self.t_ba)  # delay with postponement
             if delay_postpone < delay:
                 Theta_hat = Theta_hat_postpone
             else:
                 P_hat = P_hat.pop()
             sequence -= 1
-        Theta_x = Theta_hat
+        self.Theta_x = Theta_hat
         self.P_x = P_hat
         # Theta_x = Remove(Theta_x, self.P_x)
-        return Theta_x, self.P_x
+
+    from Math.distance import distance
+
+    # main function
+    def Slack(self, S, Routes):
+        Slacks: int = 0
+        for routePerVehicle in Routes:
+            for destination in routePerVehicle.get("route"):
+                Slacks += max(0, destination.get("timeDeadline") + self.t_ba - self.time_buffer - destination.get("arriveTime"))
+        return Slacks
+        # For every route plan Θ̂, the function calculates
+        # the sum of differences between arrival time aD and deadline over
+        # all orders: max{0, (tD + ¯t)−(aD + b)}.
 
     def showPosition(self):
         plt.scatter(self.x_R, self.y_R, c='red', s=25)
