@@ -4,6 +4,7 @@ class driver:
         self.x: float = driver_x
         self.y: float = driver_y
         self.velocity: float = velocity
+        self.currentCapacity: int = 0
 
     def get_id(self):
         return self.id
@@ -22,3 +23,9 @@ class driver:
 
     def getVelocity(self):
         return self.velocity
+
+    def getCurrentCapacity(self):
+        return self.currentCapacity
+
+    def setCurrentCapacity(self, capacity):
+        self.currentCapacity = capacity

@@ -5,7 +5,7 @@ from model.driver import driver
 from model.order import Ds
 
 
-def AssignOrder(Theta_hat, D: Ds, V: driver, RestaurantList: restaurant):
+def AssignOrder(Theta_hat: list, D: Ds, V: driver, RestaurantList: list):
     currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
     if currentRoute is None:
         sub_rout: list = [RestaurantList[D.getRestaurant()], D]

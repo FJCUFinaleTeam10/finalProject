@@ -1,4 +1,4 @@
-import random
+import copy
 from math import factorial
 
 import matplotlib.pyplot as plt
@@ -6,16 +6,18 @@ import matplotlib.pyplot as plt
 from Math.Geometry import interSectionCircleAndLine
 from Math.distance import distance
 from assignOrder import AssignOrder
-from findVehicle import FindVehicle
 from generatingData import generateTestData
-from model import order
+from model.driver import driver
+from model.order import Ds
+from model.restaurant import restaurant
 from nextPermutation import nextPermutation
 from postponement import Postponement
 from remove import Remove
 
 
 class RMDP:
-    def __init__(self):
+    def __init__(self, delay: int, maxLengthPost: int, maxTimePost: int,
+                 capacity: int, velocity: int, restaurantPrepareTime: int):
         self.x = 0
         self.slack = 0
         self.D_0 = []  # Order
@@ -33,8 +35,14 @@ class RMDP:
         self.t_Pmax = 40
         self.distanceEpsilon = 10
         self.t_ba = 10
+        self.delay = delay
+        self.maxLengthPost = maxLengthPost
+        self.maxTimePost = maxTimePost
+        self.capacity = capacity
+        self.velocity = velocity
+        self.restaurantPrepareTime = restaurantPrepareTime
 
-    def runRMDP(self, T, Theta, delay: float):
+    def runRMDP(self, state: int, T: int, delay: int):
 
         # Orders
         # parameters initialization
@@ -52,28 +60,29 @@ class RMDP:
             Theta_hat = self.Theta  # Candidate route plan
             P_hat = []  # Set of postponements
             for D in D_hat:
-                currentPairdDriver = FindVehicle(Theta_hat, D, self.time_buffer, self.V, self.R)
-                Theta_hat = AssignOrder(Theta_hat, D, currentPairdDriver, self.R)
+                currentPairdDriver = self.FindVehicle(Theta_hat, D)
+                Theta_hat = AssignOrder(Theta_hat, D, currentPairdDriver, self.restaurantList)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
                     while D.t - P_hat[0].t > self.t_Pmax:
-                        pairedDriver = FindVehicle(Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
+                        pairedDriver = self.FindVehicle(Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
                         Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.R)
                         P_hat.pop(0)
                     if len(P_hat) >= self.p_max:
                         for i in range(0, len(P_hat)):
-                            pairedDriver = FindVehicle(Theta_hat, P_hat[i], self.time_buffer, self.V, self.R)
-                            Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.R)
+                            pairedDriver = self.FindVehicle(Theta_hat, P_hat[i])
+                            Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.restaurantList)
                         P_hat.clear
                     P_hat.append(D)
                 x_hat = [Theta_hat, P_hat]
             delay = self.Slack(self.S, Theta_hat)  # delay with no postponement
             # plan with postpnement
             Theta_hat_postpone = Remove(Theta_hat, P_hat)
-            delay_postpone = self.Slack(self.S, Theta_hat_postpone, self.time_buffer, self.t_ba)  # delay with postponement
+            delay_postpone = self.Slack(self.S, Theta_hat_postpone, self.time_buffer,
+                                        self.t_ba)  # delay with postponement
             if delay_postpone < delay:
                 Theta_hat = Theta_hat_postpone
             else:
@@ -83,15 +92,15 @@ class RMDP:
         self.P_x = P_hat
         # Theta_x = Remove(Theta_x, self.P_x)
 
-    from Math.distance import distance
-
     # main function
     def Slack(self, S, Routes):
         Slacks: int = 0
         for routePerVehicle in Routes:
-            for destination in routePerVehicle.get("route"):
-                Slacks += max(0, destination.get("timeDeadline") + self.t_ba - self.time_buffer - destination.get("arriveTime"))
+            for destination in routePerVehicle.get('route'):
+                Slacks += max(0, destination.get('timeDeadline') + self.t_ba - self.time_buffer - destination.get(
+                    'arriveTime'))
         return Slacks
+
         # For every route plan Θ̂, the function calculates
         # the sum of differences between arrival time aD and deadline over
         # all orders: max{0, (tD + ¯t)−(aD + b)}.
@@ -102,15 +111,16 @@ class RMDP:
         plt.show()
 
     def generatingData(self):
-        self.R, self.x_R, self.y_R = generateTestData.importRestaurantValue()
-        self.V, self.x_V, self.y_V = generateTestData.importVehicleValue()
+        self.restaurantList, self.restauranList_x, self.restauranList_y = generateTestData.importRestaurantValue()
+        self.vehiceList, self.vehiclelist_x, self.vehiclelist_y = generateTestData.importVehicleValue()
         self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
 
-        for vehicle in self.V:
-            vehicle.setVelocity(10)
+        for vehicle in self.vehiceList:
+            vehicle.setVelocity(self.velocity)
+            vehicle.setCurrentCapacity(0)
 
-        for restaurant in self.R:
-            restaurant.setPrepareTime(10 * 60)
+        for restaurant in self.restaurantList:
+            restaurant.setPrepareTime(self.restaurantPrepareTime)
 
     def updateDriverLocation(self, time):
         for route in self.Theta:
@@ -126,3 +136,21 @@ class RMDP:
                 currentDriver.route.pop(0)
             currentDriver.setLongitude(updatedLocation.x)
             currentDriver.setLatitude(updatedLocation.y)
+
+    def tripTime(self, driv: driver, res: restaurant, order: Ds):
+        return (distance(driv.x, driv.y, res.xPosition, res.yPosition) +
+                distance(res.xPosition, res.yPosition, order.x, order.y)) / driv.getVelocity()
+
+    def FindVehicle(self, Theta_hat, Order):
+        OrderRestaurant = self.restaurantList[Order.R - 1]
+        minTimeDriver = self.vehiceList[0]
+        minTimeTolTal = float('inf')
+        handleDriver = [driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
+        for currentDriver in handleDriver:
+            if self.tripTime(currentDriver, OrderRestaurant, Order) < self.tripTime(minTimeDriver, OrderRestaurant,
+                                                                                    Order):
+                minTimeDriver = copy.copy(currentDriver)
+                minTimeTolTal = self.tripTime(currentDriver, OrderRestaurant, Order)
+            Order.setDriver(currentDriver)
+            Order.setArriveTime(minTimeTolTal)
+            return minTimeDriver
