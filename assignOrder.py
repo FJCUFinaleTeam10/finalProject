@@ -17,6 +17,7 @@ def AssignOrder(Theta_hat, D: Ds, V: driver, RestaurantList: list):
     else:
         currentRoute["route"].append(RestaurantList[D.getRestaurant()])
         currentRoute["route"].append(D)
+        
     return Theta_hat
 # logic:the route will be divided into many sub_rout,  very subroute is the route for every driver, the key is driver
 # id and the value is a list of the destination of restaurant and the delivery order destination, ijsut normally make
