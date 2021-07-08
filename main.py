@@ -11,7 +11,6 @@ def main():
     velocity: int = 20
     restaurantRepareTime: int = 10 * 60
     instance = RMDP(delay, maxLengthPost, maxTimePost, capacity, velocity, restaurantRepareTime)
-    instance.generatingData()
 
     potentialOrders: list = generateTestData.importOrderValue()
 

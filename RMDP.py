@@ -18,6 +18,9 @@ from remove import Remove
 class RMDP:
     def __init__(self, delay: int, maxLengthPost: int, maxTimePost: int,
                  capacity: int, velocity: int, restaurantPrepareTime: int):
+        self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
+        self.vehiceList, self.vehiclelist_x, self.vehiclelist_y = generateTestData.importVehicleValue()
+        self.restaurantList, self.restauranList_x, self.restauranList_y = generateTestData.importRestaurantValue()
         self.x = 0
         self.slack = 0
         self.D_0 = []  # Order
@@ -26,7 +29,7 @@ class RMDP:
         self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000
-        self.Theta = [{"driverId": driver.get_id(), "route": []}for driver in self.driverList] # related plan
+        self.Theta = [{"driverId": driver.get_id(), "route": []}for driver in self.vehiceList] # related plan
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0
@@ -110,11 +113,6 @@ class RMDP:
         plt.scatter(self.x_V, self.y_V, c='green', s=25)
         plt.show()
 
-    def generatingData(self):
-        self.restaurantList, self.restauranList_x, self.restauranList_y = generateTestData.importRestaurantValue()
-        self.vehiceList, self.vehiclelist_x, self.vehiclelist_y = generateTestData.importVehicleValue()
-        self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
-
         for vehicle in self.vehiceList:
             vehicle.setVelocity(self.velocity)
             vehicle.setCurrentCapacity(0)
@@ -139,7 +137,7 @@ class RMDP:
 
     def tripTime(self, driv: driver, res: restaurant, order: Ds):
         return (distance(driv.x, driv.y, res.xPosition, res.yPosition) +
-                distance(res.xPosition, res.yPosition, order.x, order.y)) / driv.getVelocity()
+                distance(res.xPosition, res.yPosition, order.x, order.y)) / self.velocity
 
     def FindVehicle(self, Theta_hat, Order):
         OrderRestaurant = self.restaurantList[Order.R - 1]
