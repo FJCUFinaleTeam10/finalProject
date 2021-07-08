@@ -26,7 +26,7 @@ class RMDP:
         self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000
-        self.Theta = []  # related plan
+        self.Theta = [{"driverId": driver.get_id(), "route": []}for driver in self.driverList] # related plan
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0

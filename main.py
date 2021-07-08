@@ -29,7 +29,7 @@ def main():
         #                  buffer, maxLengthPost, maxTimePost)
         instance.runRMDP(s, currentTime, 0)
 
-        # every time new order comming we will call RMDP mocdel
+        # every time new order coming we will call RMDP model
         # to generate Decision and update the Driver location
         # for next order coming
 
