@@ -49,16 +49,4 @@ def interSectionCircleAndLine(centerX: float, centerY: float, Radius: float, aX:
     # i.geoms[]
 
 
-def test():
-    p = Point(5, 5)
-    c = p.buffer(3).boundary
-    line = LineString([(0, 0), (10, 10)])
-    i = c.intersection(line)
 
-    print(i.geoms[0].coords[0])
-
-    print(i.geoms[1].coords[0])
-
-
-interSectionCircleAndLine(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
-test()
