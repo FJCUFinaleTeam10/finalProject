@@ -33,7 +33,7 @@ class RMDP:
                       for driver in self.vehiceList]  # related plan
         self.S = 0  # state(not sure)
         self.Delta_S = 0
-        self.P_x = 0
+        self.P_x = []
         self.time_buffer = 0
         self.p_max = 3
         self.t_Pmax = 40
@@ -62,7 +62,7 @@ class RMDP:
             nextPermutation(self.D_0)
             D_hat = self.D_0
             Theta_hat = self.Theta  # Candidate route plan
-            P_hat = []  # Set of postponements
+            P_hat = self.P_x
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
                 Theta_hat = AssignOrder(
