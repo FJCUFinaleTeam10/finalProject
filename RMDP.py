@@ -101,7 +101,7 @@ class RMDP:
         for routePerVehicle in self.Theta:
             currentRoute: list = routePerVehicle['route']
             currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']]
-            totalSlack += self.delayTotal(currentRoute)
+            totalSlack += self.slackDelay(currentRoute)
         return totalSlack
 
         # For every route plan Θ̂, the function calculates
@@ -163,7 +163,7 @@ class RMDP:
                                        route[i].getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(route[i], Ds):
-                delay += max(0, tripTime+self.time -route[i].getDeadLine())
+                delay += max(0, tripTime + self.time - route[i].getDeadLine())
         return delay
 
     def slackDelay(self, route: list):
