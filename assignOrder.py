@@ -3,32 +3,28 @@ import copy
 from model.restaurant import restaurant
 from model.driver import driver
 from model.order import Ds
+from Math.distance import distance
+
+
 
 
 def AssignOrder(Theta_hat, D: Ds, V: driver, RestaurantList: list):
     currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
 
-    if currentRoute is None:
-        sub_rout = [RestaurantList[D.getRestaurant()], D]
-        Theta_hat.append({"driverId": V.get_id(), "route": sub_rout})
-    else:
-        currentRoute["route"].append(RestaurantList[D.getRestaurant()])
-        currentRoute["route"].append(D)
+    currentRoute["route"].append(RestaurantList[D.getRestaurant()])
+    currentRoute["route"].append(D)
 
-        # currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
-        # currRlist = [node for node in currentRoute if isinstance(node, driver) == True]
-        # currOlist = [node for node in currentRoute if isinstance(node, Ds) == True]
+    # currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
+    # currRlist = [node for node in currentRoute if isinstance(node, driver) == True]
+    # currOlist = [node for node in currentRoute if isinstance(node, Ds) == True]
 
-        newList = currentRoute
-        i = 0
+    newList = currentRoute
 
-        for i in range(len(currentRoute)):
-            delayTime = 0
-            j = i+1
-            for j in range(len(currentRoute)+2):
-                newList["route"].insert(i, RestaurantList[D.getRestaurant()])
-                newList["route"].insert(j, D)
-
+    for i in range(0, len(currentRoute), 1):
+        delayTime = 0
+        for j in range(i + 1, len(currentRoute) + 2, 1):
+            newList["route"].insert(i, RestaurantList[D.getRestaurant()])
+            newList["route"].insert(j, D)
 
     return Theta_hat
 # logic:the route will be divided into many sub_rout,  very subroute is the route for every driver, the key is driver

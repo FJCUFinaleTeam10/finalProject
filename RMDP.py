@@ -152,3 +152,16 @@ class RMDP:
             Order.setDriver(currentDriver)
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
+
+    def delayTotal(self,route: list, driver: driver):
+        delay: int = 0
+        tripTime: int = 0
+        for i in range(1, len(route), 1):
+            currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
+                                       route[i].getLongitude())
+            tripTime += currentDistance / driver.getVelocity()
+            if isinstance(route[i], Ds):
+                delay += max(0, tripTime - route[i].getDeadline()-self.time_buffer)
+        return delay
+
+
