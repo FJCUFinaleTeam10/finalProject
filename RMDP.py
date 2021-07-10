@@ -29,7 +29,7 @@ class RMDP:
         self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000
-        self.Theta = [{"driverId": driver.get_id(), "route": []}for driver in self.vehiceList] # related plan
+        self.Theta = [{"driverId": driver.get_id(), "route": []} for driver in self.vehiceList]  # related plan
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0
@@ -81,7 +81,7 @@ class RMDP:
                         P_hat.clear
                     P_hat.append(D)
                 x_hat = [Theta_hat, P_hat]
-            delay = self.Slack(self.S, Theta_hat)  # delay with no postponement
+            delay = self.Slack()  # delay with no postponement
             # plan with postpnement
             Theta_hat_postpone = Remove(Theta_hat, P_hat)
             delay_postpone = self.Slack(self.S, Theta_hat_postpone, self.time_buffer,
@@ -96,13 +96,13 @@ class RMDP:
         # Theta_x = Remove(Theta_x, self.P_x)
 
     # main function
-    def Slack(self, S, Routes):
-        Slacks: int = 0
-        for routePerVehicle in Routes:
-            for destination in routePerVehicle.get('route'):
-                Slacks += max(0, destination.get('timeDeadline') + self.t_ba - self.time_buffer - destination.get(
-                    'arriveTime'))
-        return Slacks
+    def Slack(self):
+        totalSlack: int = 0
+        for routePerVehicle in self.Theta:
+            currentRoute: list = routePerVehicle['route']
+            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']]
+            totalSlack += self.delayTotal(currentRoute, currentVehicle)
+        return totalSlack
 
         # For every route plan Θ̂, the function calculates
         # the sum of differences between arrival time aD and deadline over
@@ -153,15 +153,13 @@ class RMDP:
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
 
-    def delayTotal(self,route: list, driver: driver):
+    def delayTotal(self, route: list, currentDriver: driver):
         delay: int = 0
         tripTime: int = 0
         for i in range(1, len(route), 1):
             currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
                                        route[i].getLongitude())
-            tripTime += currentDistance / driver.getVelocity()
+            tripTime += currentDistance / self.velocity
             if isinstance(route[i], Ds):
-                delay += max(0, tripTime - route[i].getDeadline()-self.time_buffer)
+                delay += max(0, tripTime - route[i].getDeadLine() - self.time_buffer)
         return delay
-
-

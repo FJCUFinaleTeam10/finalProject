@@ -28,6 +28,9 @@ class Ds:
     def getAtitude(self):
         return self.y
 
+    def getLatitude(self):
+        return self.y
+
     def getDeadLine(self):
         return self.deadline
 
