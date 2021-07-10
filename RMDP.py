@@ -29,7 +29,8 @@ class RMDP:
         self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000
-        self.Theta = [{"driverId": driver.get_id(), "route": []} for driver in self.vehiceList]  # related plan
+        self.Theta = [{"driverId": driver.get_id(), "route": []}
+                      for driver in self.vehiceList]  # related plan
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = 0
@@ -64,36 +65,35 @@ class RMDP:
             P_hat = []  # Set of postponements
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
-                Theta_hat = AssignOrder(Theta_hat, D, currentPairdDriver, self.restaurantList)
+                Theta_hat = AssignOrder(
+                    Theta_hat, D, currentPairdDriver, self.restaurantList)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
                     while D.t - P_hat[0].t > self.t_Pmax:
-                        pairedDriver = self.FindVehicle(Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
-                        Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.R)
+                        pairedDriver = self.FindVehicle(
+                            Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
+                        Theta_hat = AssignOrder(
+                            Theta_hat, D, pairedDriver, self.R)
                         P_hat.pop(0)
                     if len(P_hat) >= self.p_max:
                         for i in range(0, len(P_hat)):
-                            pairedDriver = self.FindVehicle(Theta_hat, P_hat[i])
-                            Theta_hat = AssignOrder(Theta_hat, D, pairedDriver, self.restaurantList)
+                            pairedDriver = self.FindVehicle(
+                                Theta_hat, P_hat[i])
+                            Theta_hat = AssignOrder(
+                                Theta_hat, D, pairedDriver, self.restaurantList)
                         P_hat.clear
                     P_hat.append(D)
-                x_hat = [Theta_hat, P_hat]
-            delay = self.Slack()  # delay with no postponement
-            # plan with postpnement
-            Theta_hat_postpone = Remove(Theta_hat, P_hat)
-            delay_postpone = self.Slack(self.S, Theta_hat_postpone, self.time_buffer,
-                                        self.t_ba)  # delay with postponement
-            if delay_postpone < delay:
-                Theta_hat = Theta_hat_postpone
-            else:
-                P_hat = P_hat.pop()
+
+            if((self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack))):
+                self.slack = self.Slack()
+                self.delay = self.S
+                self.Theta_x = Theta_hat
+                self.P_x = P_hat
             sequence -= 1
-        self.Theta_x = Theta_hat
-        self.P_x = P_hat
-        # Theta_x = Remove(Theta_x, self.P_x)
+        self.Theta_x = Remove(self.Theta_x, self.P_x)
 
     # main function
     def Slack(self):
@@ -143,12 +143,14 @@ class RMDP:
         OrderRestaurant = self.restaurantList[Order.R - 1]
         minTimeDriver = self.vehiceList[0]
         minTimeTolTal = float('inf')
-        handleDriver = [driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
+        handleDriver = [
+            driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
         for currentDriver in handleDriver:
             if self.tripTime(currentDriver, OrderRestaurant, Order) < self.tripTime(minTimeDriver, OrderRestaurant,
                                                                                     Order):
                 minTimeDriver = copy.copy(currentDriver)
-                minTimeTolTal = self.tripTime(currentDriver, OrderRestaurant, Order)
+                minTimeTolTal = self.tripTime(
+                    currentDriver, OrderRestaurant, Order)
             Order.setDriver(currentDriver)
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
@@ -161,5 +163,6 @@ class RMDP:
                                        route[i].getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(route[i], Ds):
-                delay += max(0, tripTime - route[i].getDeadLine() - self.time_buffer)
+                delay += max(0, tripTime -
+                             route[i].getDeadLine() - self.time_buffer)
         return delay
