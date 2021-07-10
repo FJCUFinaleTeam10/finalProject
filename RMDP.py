@@ -87,7 +87,7 @@ class RMDP:
                         P_hat.clear
                     P_hat.append(D)
 
-            if((self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack))):
+            if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
                 self.Theta_x = Theta_hat
@@ -101,7 +101,7 @@ class RMDP:
         for routePerVehicle in self.Theta:
             currentRoute: list = routePerVehicle['route']
             currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']]
-            totalSlack += self.delayTotal(currentRoute, currentVehicle)
+            totalSlack += self.delayTotal(currentRoute)
         return totalSlack
 
         # For every route plan Θ̂, the function calculates
@@ -155,7 +155,7 @@ class RMDP:
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
 
-    def delayTotal(self, route: list, currentDriver: driver):
+    def deltaSDelay(self, route: list):
         delay: int = 0
         tripTime: int = 0
         for i in range(1, len(route), 1):
@@ -163,6 +163,16 @@ class RMDP:
                                        route[i].getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(route[i], Ds):
-                delay += max(0, tripTime -
-                             route[i].getDeadLine() - self.time_buffer)
+                delay += max(0, tripTime+self.time -route[i].getDeadLine())
+        return delay
+
+    def slackDelay(self, route: list):
+        delay: int = 0
+        tripTime: int = 0
+        for i in range(1, len(route), 1):
+            currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
+                                       route[i].getLongitude())
+            tripTime += currentDistance / self.velocity
+            if isinstance(route[i], Ds):
+                delay += max(0, route[i].getDeadLine() - tripTime - self.time_buffer)
         return delay
