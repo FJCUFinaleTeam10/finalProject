@@ -115,12 +115,11 @@ class RMDP:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
                 Theta_hat = self.AssignOrder(
                     Theta_hat, D, currentPairdDriver, self.restaurantList)
-
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
-                    while D.t - P_hat[0].t > self.t_Pmax:
+                    while (D.t - P_hat[0].t) >= self.t_Pmax:
                         pairedDriver = self.FindVehicle(
                             Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
                         Theta_hat = self.AssignOrder(
@@ -132,14 +131,16 @@ class RMDP:
                                 Theta_hat, P_hat[i])
                             Theta_hat = self.AssignOrder(
                                 Theta_hat, D, pairedDriver, self.restaurantList)
-                        P_hat.clear
+                        P_hat.clear()
                     P_hat.append(D)
+            print(len(Theta_hat))
             if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
                 self.Theta_x = Theta_hat
                 self.P_x = P_hat
             sequence -= 1
+        print(self.Theta_x)
         self.Theta = Remove(self.Theta_x, self.P_x)
         self.P = self.P_x
 
