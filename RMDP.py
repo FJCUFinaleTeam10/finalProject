@@ -30,9 +30,11 @@ class RMDP:
         self.vertical = 1000
         self.Theta = [{"driverId": driver.get_id(), "route": []}
                       for driver in self.vehiceList]  # related plan
+        self.Theta_x = []
         self.S = 0  # state(not sure)
         self.Delta_S = 0
         self.P_x = []
+        self.P = []
         self.time_buffer = 0
         self.p_max = 3
         self.t_Pmax = 40
@@ -55,11 +57,13 @@ class RMDP:
                                        currentNode.getLatitude(), currentNode.getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(currentNode, Ds):
-                delay += max(0, (tripTime + self.time_buffer) - (currentNode.getDeadLine()+currentNode.get_timeRequest()))
+                delay += max(0, (tripTime + self.time_buffer) -
+                             (currentNode.getDeadLine()+currentNode.get_timeRequest()))
         return delay
 
     def AssignOrder(self, Theta_hat, D: Ds, V: driver, RestaurantList: list):
-        currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
+        currentRoute = next(
+            (route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
 
         if currentRoute is None:
             sub_rout = [RestaurantList[D.getRestaurant()], D]
@@ -73,9 +77,11 @@ class RMDP:
                 newList = currentRoute
                 delayTime = 0
 
-                for j in range(i + 1, len(currentRoute) + 2, 1):  # find all the possible positioins of new order
+                # find all the possible positioins of new order
+                for j in range(i + 1, len(currentRoute) + 2, 1):
                     tempList = newList
-                    tempList["route"].insert(i, RestaurantList[D.getRestaurant()])
+                    tempList["route"].insert(
+                        i, RestaurantList[D.getRestaurant()])
                     tempList["route"].insert(j, D)
 
                     delayTime = self.deltaSDelay(tempList)
@@ -99,12 +105,12 @@ class RMDP:
         for i in range(T, T + Order_num):
             self.D_0.append(self.Ds_0[i])
         sequence = factorial(Order_num)  # counter for n! type sequences
-
         while sequence:
+            print(sequence)
             nextPermutation(self.D_0)
             D_hat = self.D_0
             Theta_hat = self.Theta  # Candidate route plan
-            P_hat = self.P_x
+            P_hat = self.P
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
                 Theta_hat = self.AssignOrder(
@@ -128,16 +134,17 @@ class RMDP:
                                 Theta_hat, D, pairedDriver, self.restaurantList)
                         P_hat.clear
                     P_hat.append(D)
-
             if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
                 self.Theta_x = Theta_hat
                 self.P_x = P_hat
             sequence -= 1
-        self.Theta_x = Remove(self.Theta_x, self.P_x)
+        self.Theta = Remove(self.Theta_x, self.P_x)
+        self.P = self.P_x
 
     # main function
+
     def Slack(self):
         totalSlack: int = 0
         for routePerVehicle in self.Theta:
@@ -205,5 +212,6 @@ class RMDP:
                                        route[i].getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(route[i], Ds):
-                delay += max(0, route[i].getDeadLine() - tripTime - self.time_buffer)
+                delay += max(0, route[i].getDeadLine() -
+                             tripTime - self.time_buffer)
         return delay
