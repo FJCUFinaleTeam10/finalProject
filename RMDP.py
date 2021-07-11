@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 
 from Math.Geometry import interSectionCircleAndLine
 from Math.distance import distance
-from assignOrder import AssignOrder
 from generatingData import generateTestData
 from model.driver import driver
 from model.order import Ds
@@ -46,6 +45,46 @@ class RMDP:
         self.velocity = velocity
         self.restaurantPrepareTime = restaurantPrepareTime
 
+    def deltaSDelay(self, route: list):
+        delay: int = 0
+        tripTime: int = 0
+        for i in range(1, len(route), 1):
+            currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
+                                       route[i].getLongitude())
+            tripTime += currentDistance / self.velocity
+            if isinstance(route[i], Ds):
+                delay += max(0, tripTime + self.time - route[i].getDeadLine())
+        return delay
+
+    def AssignOrder(self, Theta_hat, D: Ds, V: driver, RestaurantList: list):
+        currentRoute = next((route for route in Theta_hat if route.get("driverId") == V.get_id()), None)
+
+        if currentRoute is None:
+            sub_rout = [RestaurantList[D.getRestaurant()], D]
+            Theta_hat.append({"driverId": V.get_id(), "route": sub_rout})
+        else:
+            currentRoute["route"].append(RestaurantList[D.getRestaurant()])
+            currentRoute["route"].append(D)
+
+            minDelayTime = 0
+            for i in range(0, len(currentRoute), 1):  # control Restaurant
+                newList = currentRoute
+                delayTime = 0
+
+                for j in range(i+1, len(currentRoute)+2, 1): # find all the possible positioins of new order
+                    tempList = newList
+                    tempList["route"].insert(i, RestaurantList[D.getRestaurant()])
+                    tempList["route"].insert(j, D)
+
+                    delayTime = self.deltaSDelay(tempList)
+                    if i == 0 and j == 1:
+                        minDelayTime = delayTime
+                    else:
+                        if minDelayTime > delayTime:
+                            minDelayTime = delayTime
+                            Theta_hat = tempList
+                            self.S = minDelayTime
+        return Theta_hat
     def runRMDP(self, state: int, T: int, delay: int):
 
         # Orders
@@ -65,7 +104,7 @@ class RMDP:
             P_hat = self.P_x
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
-                Theta_hat = AssignOrder(
+                Theta_hat = self.AssignOrder(
                     Theta_hat, D, currentPairdDriver, self.restaurantList)
 
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
@@ -75,14 +114,14 @@ class RMDP:
                     while D.t - P_hat[0].t > self.t_Pmax:
                         pairedDriver = self.FindVehicle(
                             Theta_hat, P_hat[0], self.time_buffer, self.V, self.R)
-                        Theta_hat = AssignOrder(
+                        Theta_hat = self.AssignOrder(
                             Theta_hat, D, pairedDriver, self.R)
                         P_hat.pop(0)
                     if len(P_hat) >= self.p_max:
                         for i in range(0, len(P_hat)):
                             pairedDriver = self.FindVehicle(
                                 Theta_hat, P_hat[i])
-                            Theta_hat = AssignOrder(
+                            Theta_hat = self.AssignOrder(
                                 Theta_hat, D, pairedDriver, self.restaurantList)
                         P_hat.clear
                     P_hat.append(D)
@@ -154,17 +193,6 @@ class RMDP:
             Order.setDriver(currentDriver)
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
-
-    def deltaSDelay(self, route: list):
-        delay: int = 0
-        tripTime: int = 0
-        for i in range(1, len(route), 1):
-            currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
-                                       route[i].getLongitude())
-            tripTime += currentDistance / self.velocity
-            if isinstance(route[i], Ds):
-                delay += max(0, tripTime + self.time - route[i].getDeadLine())
-        return delay
 
     def slackDelay(self, route: list):
         delay: int = 0
