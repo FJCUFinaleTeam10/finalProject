@@ -48,12 +48,14 @@ class RMDP:
     def deltaSDelay(self, route: list):
         delay: int = 0
         tripTime: int = 0
-        for i in range(1, len(route), 1):
-            currentDistance = distance(route[i - 1].getLatitude(), route[i - 1].getLongitude(), route[i].getLatitude(),
-                                       route[i].getLongitude())
+        for i in range(1, len(route['route']), 1):
+            previousNode = route['route'][i - 1]
+            currentNode = route['route'][i]
+            currentDistance = distance(previousNode.getLatitude(), previousNode.getLongitude(),
+                                       currentNode.getLatitude(), currentNode.getLongitude())
             tripTime += currentDistance / self.velocity
-            if isinstance(route[i], Ds):
-                delay += max(0, tripTime + self.time - route[i].getDeadLine())
+            if isinstance(currentNode, Ds):
+                delay += max(0, (tripTime + self.time_buffer) - (currentNode.getDeadLine()+currentNode.get_timeRequest()))
         return delay
 
     def AssignOrder(self, Theta_hat, D: Ds, V: driver, RestaurantList: list):
@@ -71,7 +73,7 @@ class RMDP:
                 newList = currentRoute
                 delayTime = 0
 
-                for j in range(i+1, len(currentRoute)+2, 1): # find all the possible positioins of new order
+                for j in range(i + 1, len(currentRoute) + 2, 1):  # find all the possible positioins of new order
                     tempList = newList
                     tempList["route"].insert(i, RestaurantList[D.getRestaurant()])
                     tempList["route"].insert(j, D)
@@ -85,6 +87,7 @@ class RMDP:
                             Theta_hat = tempList
                             self.S = minDelayTime
         return Theta_hat
+
     def runRMDP(self, state: int, T: int, delay: int):
 
         # Orders
@@ -139,7 +142,7 @@ class RMDP:
         totalSlack: int = 0
         for routePerVehicle in self.Theta:
             currentRoute: list = routePerVehicle['route']
-            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']]
+            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']-1]
             totalSlack += self.slackDelay(currentRoute)
         return totalSlack
 
@@ -161,7 +164,7 @@ class RMDP:
 
     def updateDriverLocation(self, time):
         for route in self.Theta:
-            currentDriver = self.D[route.get("driverid")]
+            currentDriver = self.D[route.get("driverid") - 1]
             targetDestination = currentDriver.route[0]
             travledDistance = currentDriver.getVelocity * time
             updatedLocation = interSectionCircleAndLine(currentDriver.getLongitude,
