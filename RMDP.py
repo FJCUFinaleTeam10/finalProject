@@ -91,7 +91,6 @@ class RMDP:
                         if minDelayTime > delayTime:
                             minDelayTime = delayTime
                             Theta_hat = tempList
-                            self.S = minDelayTime
         return Theta_hat
 
     def runRMDP(self, state: int, T: int, delay: int):
@@ -111,6 +110,7 @@ class RMDP:
             D_hat = self.D_0
             Theta_hat = self.Theta  # Candidate route plan
             P_hat = self.P
+
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
                 Theta_hat = self.AssignOrder(
@@ -133,22 +133,25 @@ class RMDP:
                                 Theta_hat, D, pairedDriver, self.restaurantList)
                         P_hat.clear()
                     P_hat.append(D)
-            print(len(Theta_hat))
+            if(sequence == 50):
+                print(Theta_hat)
+            self.S = self.TotalDelay()
             if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
                 self.Theta_x = Theta_hat
                 self.P_x = P_hat
             sequence -= 1
+
         print(self.Theta_x)
         self.Theta = Remove(self.Theta_x, self.P_x)
         self.P = self.P_x
-
+        self.D_0.clear()
     # main function
 
     def Slack(self):
         totalSlack: int = 0
-        for routePerVehicle in self.Theta:
+        for routePerVehicle in self.Theta_x:
             currentRoute: list = routePerVehicle['route']
             currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']-1]
             totalSlack += self.slackDelay(currentRoute)
@@ -216,3 +219,11 @@ class RMDP:
                 delay += max(0, route[i].getDeadLine() -
                              tripTime - self.time_buffer)
         return delay
+
+    def TotalDelay(self):
+        totalSlack: int = 0
+        for routePerVehicle in self.Theta_x:
+            currentRoute: list = routePerVehicle['route']
+            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']-1]
+            totalSlack += self.deltaSDelay(currentRoute)
+        return totalSlack
