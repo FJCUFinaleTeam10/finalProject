@@ -48,3 +48,9 @@ class Ds:
 
     def setDeadline(self, time: int):
         self.time = time
+
+    def setVelocity(self, velocity):
+        self.velocity = velocity
+
+    def getVelocity(self):
+        return self.velocity

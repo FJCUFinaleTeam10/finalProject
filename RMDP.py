@@ -28,8 +28,7 @@ class RMDP:
         self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000
-        self.Theta = [{"driverId": driver.get_id(), "route": []}
-                      for driver in self.vehiceList]  # related plan
+        self.Theta = [{"driverId": driver.get_id(), "route": []}for driver in self.vehiceList]  # related plan
         self.Theta_x = []
         self.S = 0  # state(not sure)
         self.Delta_S = 0
@@ -47,9 +46,12 @@ class RMDP:
         self.velocity = velocity
         self.restaurantPrepareTime = restaurantPrepareTime
 
+        for currentDelay in self.vehiceList:
+            currentDelay.setVelocity(40)
+
     def deltaSDelay(self, route: list):
-        delay: int = 0
-        tripTime: int = 0
+        delay: float = 0.0
+        tripTime: float = 0.0
         for i in range(1, len(route['route']), 1):
             previousNode = route['route'][i - 1]
             currentNode = route['route'][i]
@@ -58,7 +60,7 @@ class RMDP:
             tripTime += currentDistance / self.velocity
             if isinstance(currentNode, Ds):
                 delay += max(0, (tripTime + self.time_buffer) -
-                             (currentNode.getDeadLine()+currentNode.get_timeRequest()))
+                             (currentNode.getDeadLine() + currentNode.get_timeRequest()))
         return delay
 
     def AssignOrder(self, Theta_hat, D: Ds, V: driver, RestaurantList: list):
@@ -95,10 +97,6 @@ class RMDP:
 
     def runRMDP(self, state: int, T: int, delay: int):
 
-        # Orders
-        # parameters initialization
-        # print(R)
-
         Order_num = 5
         T = Order_num * T
         for i in range(T, T + Order_num):
@@ -113,8 +111,7 @@ class RMDP:
 
             for D in D_hat:
                 currentPairdDriver = self.FindVehicle(Theta_hat, D)
-                Theta_hat = self.AssignOrder(
-                    Theta_hat, D, currentPairdDriver, self.restaurantList)
+                Theta_hat = self.AssignOrder(Theta_hat, D, currentPairdDriver, self.restaurantList)
                 if Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
@@ -153,7 +150,7 @@ class RMDP:
         totalSlack: int = 0
         for routePerVehicle in self.Theta_x:
             currentRoute: list = routePerVehicle['route']
-            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']-1]
+            currentVehicle: driver = self.vehiceList[routePerVehicle['driverId'] - 1]
             totalSlack += self.slackDelay(currentRoute)
         return totalSlack
 
@@ -196,14 +193,12 @@ class RMDP:
         OrderRestaurant = self.restaurantList[Order.R - 1]
         minTimeDriver = self.vehiceList[0]
         minTimeTolTal = float('inf')
-        handleDriver = [
-            driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
+        handleDriver = [driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
         for currentDriver in handleDriver:
             if self.tripTime(currentDriver, OrderRestaurant, Order) < self.tripTime(minTimeDriver, OrderRestaurant,
                                                                                     Order):
                 minTimeDriver = copy.copy(currentDriver)
-                minTimeTolTal = self.tripTime(
-                    currentDriver, OrderRestaurant, Order)
+                minTimeTolTal = self.tripTime(currentDriver, OrderRestaurant, Order)
             Order.setDriver(currentDriver)
             Order.setArriveTime(minTimeTolTal)
             return minTimeDriver
@@ -225,5 +220,5 @@ class RMDP:
         for routePerVehicle in self.Theta_x:
             currentRoute: list = routePerVehicle['route']
             currentVehicle: driver = self.vehiceList[routePerVehicle['driverId']-1]
-            totalSlack += self.deltaSDelay(currentRoute)
+            totalSlack += self.deltaSDelay(routePerVehicle)
         return totalSlack
