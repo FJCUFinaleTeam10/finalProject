@@ -6,12 +6,12 @@ def nextPermutation(nums):
     """
     n = len(nums)
     i = n - 1
-    while i > 0 and nums[i].label <= nums[i - 1].label:
+    while i > 0 and nums[i].orderId <= nums[i - 1].orderId:
         i -= 1
     reverse(nums, i, n - 1)
     if i > 0:
         for j in range(i, n):
-            if nums[j].label > nums[i-1].label:
+            if nums[j].orderId > nums[i-1].orderId:
                 swap(nums, i-1, j)
                 break
 

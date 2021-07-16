@@ -29,3 +29,9 @@ class driver:
 
     def setCurrentCapacity(self, capacity):
         self.currentCapacity = capacity
+
+    def getLatitude(self):
+        return self.y
+
+    def getLongitude(self):
+        return self.x
