@@ -14,10 +14,8 @@ def main():
 
     potentialOrders: list = generateTestData.importOrderValue()
 
-    # for order in potentialOrders:
-    #     order.setDeadline(60 * 40)
 
-    for time in range(0, 480):
+    for time in range(0, 480,5):
         s: int = 0  # state
         currentTime = time
         # Input: State S, time t, route plan Θ, unassigned orders $o
