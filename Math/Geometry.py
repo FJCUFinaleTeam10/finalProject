@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 from shapely.geometry import Point
+from numpy import ones, vstack
+from numpy.linalg import lstsq
 
 
 def lineSolution(x1: float, x2: float, y1: float, y2: float):
@@ -31,14 +33,16 @@ def interSectionCircleAndLine(centerX: float, centerY: float, Radius: float, aX:
     # lineEquation = LineString([(aX, aY), (bX, bY)])
     # intersection = circle.intersection(lineEquation)
 
-    p = Point(centerX, centerY)
-    c = p.buffer(Radius).boundary
-    l = LineString([(aX, aY), (bX, bY)])
-    i = c.intersection(l)
+    circleCoordinate = Point(centerX, centerY)
+    circle = circleCoordinate.buffer(Radius).boundary
+    line = LineString([(aX, aY), (bX, bY)])
+    intersection = circle.intersection(line)
 
     # print(i.geoms[0].coords[0])
     # print(i.geoms[1].coords[0])
-    return i
+    print(intersection.x, intersection.y)
+    return intersection.x, intersection.y
+
     # print(intersection.geoms[0].coords[0])
     # (2.8786796564403576, 2.8786796564403576)
     # print(intersection.geoms[1].coords[0])
@@ -49,4 +53,9 @@ def interSectionCircleAndLine(centerX: float, centerY: float, Radius: float, aX:
     # i.geoms[]
 
 
-
+def lineEquationOfTwoCoordinate(x1, y1, x2, y2):
+    points = [(x1, y1), (x2, y2)]
+    x_coords, y_coords = zip(*points)
+    A = vstack([x_coords, ones(len(x_coords))]).T
+    m, c = lstsq(A, y_coords)[0]
+    print("Line Solution is y = {m}x + {c}".format(m=m, c=c))

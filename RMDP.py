@@ -1,16 +1,12 @@
 import copy
-from math import factorial
 
 import matplotlib.pyplot as plt
-
 from Math.Geometry import interSectionCircleAndLine
 from Math.distance import distance
 from generatingData import generateTestData
 from model.driver import driver
 from model.order import Ds
 from model.restaurant import restaurant
-from nextPermutation import nextPermutation
-from postponement import Postponement
 import itertools
 
 
@@ -73,23 +69,30 @@ class RMDP:
                 currentPairdRestaurent: restaurant = copy.deepcopy(self.restaurantList[D.getRestaurantId() - 1])
                 currentPairdRestaurent.setOrderId(D.getId())
 
-                Theta_hat = self.AssignOrder(Theta_hat, D, currentPairdDriver, currentPairdRestaurent)
-
-                if Postponement(P_hat, D, self.p_max, self.t_Pmax):
+                self.AssignOrder(Theta_hat, D, currentPairdDriver, currentPairdRestaurent)
+                if self.Postponement(P_hat, D, self.p_max, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
                     while (D.t - P_hat[0].t) >= self.t_Pmax:
-                        pairedDriver = self.FindVehicle(
-                            P_hat[0], self.time_buffer, self.V, self.R)
-                        Theta_hat = self.AssignOrder(
-                            Theta_hat, D, pairedDriver, self.R)
+
+                        PairdDriver: driver = self.FindVehicle(P_hat[0])
+                        P_hat[0].setDriverId(PairdDriver.get_id())
+                        PairedRestaurent= copy.deepcopy(self.restaurantList[P_hat[0].getRestaurantId() - 1])
+                        PairedRestaurent.setOrderId(D.getId())
+                        self.AssignOrder(Theta_hat, P_hat[0], PairdDriver, PairedRestaurent)
+
                         P_hat.pop(0)
+
                     if len(P_hat) >= self.p_max:
-                        for i in range(0, len(P_hat)):
-                            pairedDriver = self.FindVehicle(P_hat[i])
-                            Theta_hat = self.AssignOrder(
-                                Theta_hat, D, pairedDriver, currentPairdRestaurent)
+                        for pospondedOrder in P_hat:
+
+                            PairdDriver: driver = self.FindVehicle(pospondedOrder)
+                            pospondedOrder.setDriverId(PairdDriver.get_id())
+                            PairedRestaurent = copy.deepcopy(self.restaurantList[pospondedOrder.getRestaurantId() - 1])
+                            PairedRestaurent.setOrderId(pospondedOrder.getId())
+                            self.AssignOrder(Theta_hat, pospondedOrder, PairdDriver, PairedRestaurent)
+
                         P_hat.clear()
                     P_hat.append(D)
             # if sequence == 50:
@@ -98,10 +101,9 @@ class RMDP:
             if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
-                self.Theta_x = Theta_hat
-                self.P_x = P_hat
+                self.Theta_x = copy.deepcopy(Theta_hat)
+                self.P_x = copy.deepcopy(P_hat)
             # sequence -= 1
-
         print(self.Theta_x)
         self.Remove()
 
@@ -145,8 +147,6 @@ class RMDP:
             currentRoute['route'].insert(first, currentParedRestaurent)
             currentRoute['route'].insert(second, D)
 
-        return Theta_hat
-
     # main function
 
     def Slack(self):
@@ -161,20 +161,31 @@ class RMDP:
         plt.show()
 
     def updateDriverLocation(self, time):
-        for route in self.Theta_x:
-            currentDriver = self.vehiceList[route.get("driverId") - 1]
+        hasOrderVehicle: list = [routePerVehicle for routePerVehicle in self.Theta_x if (routePerVehicle['route'] != [])]
+        for route in hasOrderVehicle:
+            currentDriver: driver = self.vehiceList[route.get("driverId") - 1]
             targetDestination = route['route'][0]
             travledDistance = currentDriver.getVelocity() * time
-            updatedLocation = interSectionCircleAndLine(currentDriver.getLongitude(),
-                                                        currentDriver.getLatitude(),
-                                                        travledDistance, currentDriver.getLongitude(),
-                                                        currentDriver.getLatitude(), targetDestination.getLongitude(),
-                                                        targetDestination.getLatitude())
-            if distance(updatedLocation.getLatitude(), updatedLocation.getLongitude(),
-                        targetDestination.getLatitude(), targetDestination.getLongitude()):
-                currentDriver.route.pop(0)
-            currentDriver.setLongitude(updatedLocation.x)
-            currentDriver.setLatitude(updatedLocation.y)
+            estimatedDistance = distance(currentDriver.getLatitude(),
+                                         currentDriver.getLongitude(),
+                                         targetDestination.getLatitude(),
+                                         targetDestination.getLongitude())
+            if travledDistance > 0:
+
+                if travledDistance >= estimatedDistance:
+                    currentDriver.setLatitude(targetDestination.getLatitude())
+                    currentDriver.setLongitude(targetDestination.getLongitude())
+                    route['route'].pop(0)
+                else:
+                    updatedLon, updatedLat = interSectionCircleAndLine(currentDriver.getLongitude(),
+                                                                       currentDriver.getLatitude(),
+                                                                       travledDistance,
+                                                                       currentDriver.getLongitude(),
+                                                                       currentDriver.getLatitude(),
+                                                                       targetDestination.getLongitude(),
+                                                                       targetDestination.getLatitude())
+                    currentDriver.setLatitude(updatedLon)
+                    currentDriver.setLongitude(updatedLat)
 
     def tripTime(self, driv: driver, res: restaurant, order: Ds):
         return (distance(driv.x, driv.y, res.xPosition, res.yPosition) +
@@ -215,16 +226,6 @@ class RMDP:
         return totalSlack
 
     def Remove(self):
-        # out_index = []
-        # for i in range(len(self.Theta_x)):
-        #     for k in self.P_x:
-        #         if self.Theta_x[i]['route'].label == k.label:
-        #             out_index.append(i)
-        # out_index.reverse()
-        # print(out_index)
-        #
-        # for i in out_index:
-        #     self.Theta_x.pop(i)
         for pospondedOrder in self.P_x:
             currentPairedDriver: driver = self.vehiceList[pospondedOrder.getDriverId() - 1]
             targetRoute: list = next(
@@ -232,5 +233,19 @@ class RMDP:
             ans = [node for node in targetRoute['route'] if
                    ((isinstance(node, Ds) and node.getId() != pospondedOrder.getId()) or
                     (isinstance(node, restaurant) and node.getOrderId() != pospondedOrder.getId()))]
-            targetRoute['route'] = ans[:]
-            print('done')
+            targetRoute['route'] = copy.deepcopy(ans[:])
+
+    def Postponement(self, P_hat, D, p_max, t_Pmax):
+        # P_hat,D, p_max, t_Pmax have the description
+        # if Theta_hat != D:  # I don't know how to get current route plan
+        if len(P_hat) == 0:  # if postponement set is empty
+            return True
+        elif len(P_hat) < p_max:  # if number of postponement <= max of postponement
+            # The time difference with the first order of P_hat and check whether <= max
+            if D.t - P_hat[0].t < t_Pmax:
+                # of poatponement time
+                return True
+            else:
+                return False
+        else:
+            return False
