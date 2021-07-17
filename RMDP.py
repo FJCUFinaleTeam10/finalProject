@@ -13,6 +13,7 @@ import itertools
 class RMDP:
     def __init__(self, delay: int, maxLengthPost: int, maxTimePost: int,
                  capacity: int, velocity: int, restaurantPrepareTime: int):
+
         self.Ds_0, self.D_x, self.D_y = generateTestData.importOrderValue()
         self.vehiceList, self.vehiclelist_x, self.vehiclelist_y = generateTestData.importVehicleValue()
         self.restaurantList, self.restauranList_x, self.restauranList_y = generateTestData.importRestaurantValue()
@@ -21,7 +22,6 @@ class RMDP:
         self.D_0 = []  # Order
         self.R = []  # restaurant
         self.Order_num = 2
-        self.Vehicle_num = 10
         self.horizon = 1000
         self.vertical = 1000  # related plan
         self.Theta_x = [{"driverId": driver.get_id(), "route": []} for driver in self.vehiceList]
@@ -29,7 +29,6 @@ class RMDP:
         self.Delta_S = 0
         self.P_x = []
         self.time_buffer = 0
-        self.p_max = 3
         self.t_Pmax = 40
         self.distanceEpsilon = 10
         self.t_ba = 10
@@ -56,6 +55,7 @@ class RMDP:
         T = Order_num * T
         for i in range(T, T + Order_num):
             self.D_0.append(self.Ds_0[i])
+
         # counter for n! type sequences
         unassignedOrderPermutation = list(itertools.permutations(self.D_0))
         for permutation in unassignedOrderPermutation:
@@ -70,7 +70,7 @@ class RMDP:
                 currentPairdRestaurent.setOrderId(D.getId())
 
                 self.AssignOrder(Theta_hat, D, currentPairdDriver, currentPairdRestaurent)
-                if self.Postponement(P_hat, D, self.p_max, self.t_Pmax):
+                if self.Postponement(P_hat, D, self.maxLengthPost, self.t_Pmax):
                     if D not in P_hat:
                         P_hat.append(D)
                 else:
@@ -84,7 +84,7 @@ class RMDP:
 
                         P_hat.pop(0)
 
-                    if len(P_hat) >= self.p_max:
+                    if len(P_hat) >= self.maxLengthPost:
                         for pospondedOrder in P_hat:
 
                             PairdDriver: driver = self.FindVehicle(pospondedOrder)
@@ -92,18 +92,14 @@ class RMDP:
                             PairedRestaurent = copy.deepcopy(self.restaurantList[pospondedOrder.getRestaurantId() - 1])
                             PairedRestaurent.setOrderId(pospondedOrder.getId())
                             self.AssignOrder(Theta_hat, pospondedOrder, PairdDriver, PairedRestaurent)
-
                         P_hat.clear()
                     P_hat.append(D)
-            # if sequence == 50:
-            #     print(Theta_hat)
             self.S = self.TotalDelay()
             if (self.S < self.delay) or ((self.S == self.delay) and (self.Slack() < self.slack)):
                 self.slack = self.Slack()
                 self.delay = self.S
                 self.Theta_x = copy.deepcopy(Theta_hat)
                 self.P_x = copy.deepcopy(P_hat)
-            # sequence -= 1
         print(self.Theta_x)
         self.Remove()
 
@@ -117,8 +113,7 @@ class RMDP:
                                        currentNode.getLatitude(), currentNode.getLongitude())
             tripTime += currentDistance / self.velocity
             if isinstance(currentNode, Ds):
-                delay += max(0, (tripTime + self.time_buffer) -
-                             (currentNode.getDeadLine() + currentNode.get_timeRequest()))
+                delay += max(0, (tripTime + self.time_buffer) -(currentNode.getDeadLine() + currentNode.get_timeRequest()))
         return delay
 
     def AssignOrder(self, Theta_hat, D: Ds, V: driver, currentParedRestaurent: restaurant):
@@ -146,7 +141,6 @@ class RMDP:
 
             currentRoute['route'].insert(first, currentParedRestaurent)
             currentRoute['route'].insert(second, D)
-
     # main function
 
     def Slack(self):
@@ -240,7 +234,7 @@ class RMDP:
         # if Theta_hat != D:  # I don't know how to get current route plan
         if len(P_hat) == 0:  # if postponement set is empty
             return True
-        elif len(P_hat) < p_max:  # if number of postponement <= max of postponement
+        elif len(P_hat) < self.maxLengthPost:  # if number of postponement <= max of postponement
             # The time difference with the first order of P_hat and check whether <= max
             if D.t - P_hat[0].t < t_Pmax:
                 # of poatponement time

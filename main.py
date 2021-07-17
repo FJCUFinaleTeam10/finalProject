@@ -6,7 +6,7 @@ import folium
 def main():
     delay = float('inf')
     buffer: int = 1
-    maxLengthPost: int = 3  # p_max
+    maxLengthPost: int = 10  # p_max
     maxTimePost: int = 20  # minutes     #t_pmax
     capacity: int = 3
     velocity: int = 20
