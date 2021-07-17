@@ -60,22 +60,17 @@ class RMDP:
         T = Order_num * T
         for i in range(T, T + Order_num):
             self.D_0.append(self.Ds_0[i])
-        sequence = factorial(Order_num)
         # counter for n! type sequences
         unassignedOrderPermutation = list(itertools.permutations(self.D_0))
         for permutation in unassignedOrderPermutation:
-            # while sequence:
-            # print(sequence)
-            # nextPermutation(self.D_0)
-            # D_hat = self.
-            Theta_hat = copy.copy(self.Theta_x)  # Candidate route plan
-            P_hat = copy.copy(self.P_x)
+            Theta_hat = copy.deepcopy(self.Theta_x)  # Candidate route plan
+            P_hat = copy.deepcopy(self.P_x)
 
             for D in permutation:
 
                 currentPairdDriver: driver = self.FindVehicle(D)
                 D.setDriverId(currentPairdDriver.get_id())
-                currentPairdRestaurent: restaurant = copy.copy(self.restaurantList[D.getRestaurantId() - 1])
+                currentPairdRestaurent: restaurant = copy.deepcopy(self.restaurantList[D.getRestaurantId() - 1])
                 currentPairdRestaurent.setOrderId(D.getId())
 
                 Theta_hat = self.AssignOrder(Theta_hat, D, currentPairdDriver, currentPairdRestaurent)
@@ -193,7 +188,7 @@ class RMDP:
         for currentDriver in handleDriver:
             currenTripTime: float = self.tripTime(currentDriver, OrderRestaurant, Order)
             if currenTripTime < minTimeTolTal:
-                minTimeDriver = copy.copy(currentDriver)
+                minTimeDriver = copy.deepcopy(currentDriver)
                 minTimeTolTal = currenTripTime
         return minTimeDriver
 
@@ -201,7 +196,7 @@ class RMDP:
         delay: int = 0
         tripTime: int = 0
         currentDriver = self.vehiceList[route["driverId"] - 1]
-        currentRoute: list = copy.copy(route['route'])
+        currentRoute: list = copy.deepcopy(route['route'])
         currentRoute.append(currentDriver)
         for i in range(1, len(currentRoute), 1):
             currentDistance = distance(currentRoute[i - 1].getLatitude(), currentRoute[i - 1].getLongitude(),
