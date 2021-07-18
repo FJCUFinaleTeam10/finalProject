@@ -8,7 +8,7 @@ def main():
     buffer: int = 1
     maxLengthPost: int = 10  # p_max
     maxTimePost: int = 20  # minutes     #t_pmax
-    capacity: int = 3
+    capacity: int = 10
     velocity: int = 20
     restaurantRepareTime: int = 10 * 60
     instance = RMDP(delay, maxLengthPost, maxTimePost, capacity, velocity, restaurantRepareTime)
@@ -27,7 +27,7 @@ def main():
         # instance.runRMDP(s, currentTime, routePlan, UnassignedOrder,
         #                  buffer, maxLengthPost, maxTimePost)
 
-        instance.runRMDP(s, currentTime, 0)
+        instance.runRMDP(s, currentTime)
         print("generated routing")
         # every time new order coming we will call RMDP model
         # to generate Decision and update the Driver location

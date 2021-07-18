@@ -35,3 +35,9 @@ class driver:
 
     def getLongitude(self):
         return self.x
+
+    def setLatitude(self, latitude):
+        self.y = latitude
+
+    def setLongitude(self, longitude):
+        self.x = longitude
