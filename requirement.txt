@@ -1,4 +1,0 @@
-django
-celery
-flower
-django-bootstrap3
