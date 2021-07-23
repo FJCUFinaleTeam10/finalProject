@@ -9,14 +9,9 @@ class driver:
     def get_id(self):
         return self.id
 
-    def get_Longitude(self):
-        return self.x
 
     def get_id(self):
         return self.id
-
-    def getLatitude(self):
-        return self.y
 
     def setVelocity(self, velocity):
         self.velocity = velocity
@@ -31,10 +26,10 @@ class driver:
         self.currentCapacity = capacity
 
     def getLatitude(self):
-        return self.y
+        return self.x
 
     def getLongitude(self):
-        return self.x
+        return self.y
 
     def setLatitude(self, latitude):
         self.y = latitude

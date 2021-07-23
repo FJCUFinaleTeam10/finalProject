@@ -10,10 +10,10 @@ class restaurant:
         self.orderId = null
 
     def getLongitude(self):
-        return self.xPosition
+        return self.yPosition
 
     def getLatitude(self):
-        return self.yPosition
+        return self.xPosition
 
     def getId(self):
         return self.id
@@ -26,4 +26,3 @@ class restaurant:
 
     def getOrderId(self):
         return self.orderId
-

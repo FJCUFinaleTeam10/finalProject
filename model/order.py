@@ -28,13 +28,13 @@ class Ds:
         return self.V
 
     def getLongitude(self):
-        return self.x
+        return self.y
 
     def getAtitude(self):
-        return self.y
+        return self.x
 
     def getLatitude(self):
-        return self.y
+        return self.x
 
     def getDeadLine(self):
         return self.deadline
