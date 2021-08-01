@@ -89,7 +89,7 @@ def RMDP(T, Theta, P_x):
                         for i in range (0,p_max):
                             V = FindVehicle(Theta_hat,P_hat[i], b, V, R)
                             Theta_hat = AssignOrder(Theta_hat,P_hat[i], V)
-                    P_hat.claer
+                        P_hat.clear
                     P_hat.append(D)
                 
 
