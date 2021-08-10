@@ -20,14 +20,11 @@ class RMDP:
         self.x = 0
         self.D_0 = []  # Order
         self.Order_num = 2
-        self.horizon = 1000
-        self.vertical = 1000  # related plan
         self.Theta_x = [{"driverId": driver.get_id(), "route": []} for driver in self.vehiceList]
         self.Delta_S = 0
         self.P_x = []
         self.time_buffer = 0
-        self.t_Pmax = 40
-        self.distanceEpsilon = 10
+        self.t_Pmax = 40*60
         self.t_ba = 10
         self.delay = delay
         self.maxLengthPost = maxLengthPost
@@ -49,7 +46,7 @@ class RMDP:
     def runRMDP(self, state: int, T: int):
         delay: float = float("inf")
         Order_num = 5
-        T = Order_num * T
+        T *= Order_num
         slack = 0
         S = 0  # state(not sure)
         self.D_0.clear()
@@ -98,6 +95,7 @@ class RMDP:
                         P_hat.clear()
                     P_hat.append(D)
             S = self.TotalDelay()
+            print(S)
             if (S < delay) or ((S == delay) and (self.Slack() < slack)):
                 slack = self.Slack()
                 delay = S
