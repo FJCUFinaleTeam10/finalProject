@@ -18,6 +18,7 @@ wordCityData = pd.read_csv('worldcities.csv', encoding='ISO-8859-1')
 test_restaurantData = pd.read_csv('RMDP_resteraurants.csv', encoding='ISO-8859-1')
 # print(data['City'])
 
+'''
 driverData = json.loads(driverData.to_json(orient='records'))
 restaurantJson = json.loads(restaurantData.to_json(orient='records'))
 country_codeJson = json.loads((country_codeData.to_json(orient='records')))
@@ -25,3 +26,4 @@ test_restaurantJson = json.loads((test_restaurantData.to_json(orient='records'))
 
 test_restaurantCollection.insert_many(test_restaurantJson)
 testCountryCodeCollection.insert_many(country_codeJson)
+'''
