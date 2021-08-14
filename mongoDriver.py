@@ -6,11 +6,7 @@ from model.restaurant import restaurant
 
 
 def get_database(database):
-    client = MongoClient('127.0.0.1:27017',
-                         username='root',
-                         password='mongoadmin',
-                         authSource='admin',
-                         authMechanism='SCRAM-SHA-1')
+    client = MongoClient('mongodb://root:root@140.136.151.94:27017/RMDP?authSource=admin')
     return client[database]
 
 
