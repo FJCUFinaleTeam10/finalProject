@@ -7,8 +7,9 @@ from generatingData import generateTestData
 from model.driver import driver
 from model.order import Ds
 from model.restaurant import restaurant
+from pandas.core.frame import DataFrame
 import itertools
-
+import random
 
 class RMDP:
     def __init__(self, delay: int, maxLengthPost: int, maxTimePost: int,
@@ -60,8 +61,8 @@ class RMDP:
             P_hat = copy.deepcopy(self.P_x)
 
             for D in permutation:
-
-                currentPairdDriver: driver = self.FindVehicle(D)
+                possibleDriver = self.possibleDriver()
+                currentPairdDriver: driver = self.FindVehicle(D,possibleDriver)
                 D.setDriverId(currentPairdDriver.get_id())
                 currentPairdRestaurent: restaurant = copy.deepcopy(self.restaurantList[D.getRestaurantId() - 1])
                 currentPairdRestaurent.setOrderId(D.getId())
@@ -72,7 +73,8 @@ class RMDP:
                         P_hat.append(D)
                 else:
                     while (D.t - P_hat[0].t) >= self.t_Pmax:
-                        PairdDriver: driver = self.FindVehicle(P_hat[0])
+                        possibleDriver = self.possibleDriver()
+                        PairdDriver: driver = self.FindVehicle(P_hat[0],possibleDriver)
                         P_hat[0].setDriverId(PairdDriver.get_id())
                         PairdDriver.setCurrentCapacity(PairdDriver.getCurrentCapacity() + 1)
                         PairedRestaurent = copy.deepcopy(self.restaurantList[P_hat[0].getRestaurantId() - 1])
@@ -86,7 +88,8 @@ class RMDP:
 
                     if len(P_hat) >= self.maxLengthPost:
                         for pospondedOrder in P_hat:
-                            PairdDriver: driver = self.FindVehicle(pospondedOrder)
+                            possibleDriver = self.possibleDriver()
+                            PairdDriver: driver = self.FindVehicle(pospondedOrder,possibleDriver)
                             PairdDriver.setCurrentCapacity(PairdDriver.getCurrentCapacity() + 1)
                             pospondedOrder.setDriverId(PairdDriver.get_id())
                             PairedRestaurent = copy.deepcopy(self.restaurantList[pospondedOrder.getRestaurantId() - 1])
@@ -103,6 +106,28 @@ class RMDP:
                 self.P_x = copy.deepcopy(P_hat)
         print(self.Theta_x)
         self.Remove()
+
+    def possibleDriver(self):
+        count = 0
+        delay = []
+        driver = []
+        probillty = []
+        for routePerVehicle in self.Theta_x:
+            delay.append(self.deltaSDelay(routePerVehicle))
+            driver.append(self.vehiceList[count])
+            probillty.append(random.random())
+            count = count + 1
+        
+        result = {
+            "driver":driver,
+            "delay":delay,
+            "probility":probillty
+        }
+        data = DataFrame(result)
+       
+        data = data.sort_values(by=['delay', 'probility'],ascending=[True,False])
+        
+        return data['driver'].to_list()
 
     def deltaSDelay(self, route: list):
         delay: float = 0.0
@@ -189,11 +214,11 @@ class RMDP:
         return (distance(driv.x, driv.y, res.xPosition, res.yPosition) +
                 distance(res.xPosition, res.yPosition, order.x, order.y)) / self.velocity
 
-    def FindVehicle(self, Order: Ds):
+    def FindVehicle(self, Order: Ds,possibledriver):
         OrderRestaurant = self.restaurantList[Order.getRestaurantId() - 1]
-        minTimeDriver = self.vehiceList[0]
+        minTimeDriver = possibledriver[0]
         minTimeTolTal = float('inf')
-        handleDriver = [driver for driver in self.vehiceList if driver.getCurrentCapacity() < self.capacity]
+        handleDriver = [driver for driver in possibledriver if driver.getCurrentCapacity() < self.capacity]
         for currentDriver in handleDriver:
             currenTripTime: float = self.tripTime(currentDriver, OrderRestaurant, Order)
             if currenTripTime < minTimeTolTal:
